@@ -1,0 +1,5 @@
+delete all docker cache
+$ sudo docker system prune -a
+
+check how much space docker has taken
+$ sudo du -sh  /var/lib/docker

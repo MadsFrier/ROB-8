@@ -1,0 +1,46 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+{
+    "name": "rob8",
+    "build": { "dockerfile": "Dockerfile",
+                "context": ".."},
+    
+    "runArgs": [
+        "--network=host",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt=seccomp:unconfined",
+        "--security-opt=apparmor:unconfined",
+        "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+        "--volume=/mnt/wslg:/mnt/wslg",
+        "--ipc=host",
+        "--runtime=nvidia",
+        "--gpus=all",
+        "--pid=host"
+        // "--u=root"
+        // "device=0"
+        // uncomment to use intel iGPU
+        // "--device=/dev/dri"
+    ],
+
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}", // Needed for GUI try ":0" for windows
+        "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+        "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+        "PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+        "LIBGL_ALWAYS_SOFTWARE": "1" // Needed for software rendering of opengl
+},
+
+"customizations": {
+    "vscode": {
+        "extensions": [
+            "DotJoshJohnson.xml",
+            "ms-azuretools.vscode-docker",
+            "ms-python.python",
+            "streetsidesoftware.code-spell-checker",
+            "yzhang.markdown-all-in-one",
+            "zachflower.uncrustify",
+            "vsliveshare.vsliveshare"
+        ]
+    }
+}
+}
