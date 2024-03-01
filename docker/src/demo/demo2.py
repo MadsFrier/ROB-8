@@ -12,11 +12,11 @@ import torch
 import torchvision.transforms as transforms
 import clip
 import sys
+import os
 
-sys.path.insert(0, '/workspaces/docker/src/content/vlmaps/utils')
-sys.path.insert(0, '/workspaces/docker/src/content/vlmaps/lseg/modules/models')
-sys.path.insert(0, '/workspaces/docker/src/content/vlmaps/lseg/additional_utils')
-
+sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/utils')
+sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/lseg/modules/models')
+sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/lseg/additional_utils')
 from clip_mapping_utils import load_pose, load_semantic, load_obj2cls_dict, save_map, cvt_obj_id_2_cls_id, depth2pc, transform_pc, get_sim_cam_mat, pos2grid_id, project_point
 
 from lseg_net import LSegEncNet
@@ -53,7 +53,7 @@ def create_lseg_map_batch(load_depth, img_save_dir, camera_height, cs=0.05, gs=1
                         crop_size=crop_size)
     model_state_dict = model.state_dict()
     
-    pretrained_state_dict = torch.load("/workspaces/docker/src/content/vlmaps/lseg/checkpoints/demo_e200.ckpt")
+    pretrained_state_dict = torch.load("/workspaces/ROB-8/docker/src/content/vlmaps/lseg/checkpoints/demo_e200.ckpt")
 
     pretrained_state_dict = {k.lstrip('net.'): v for k, v in pretrained_state_dict['state_dict'].items()}
     model_state_dict.update(pretrained_state_dict)
