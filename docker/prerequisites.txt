@@ -1,0 +1,5 @@
+docker engine (add user to group)
+nvidia-container-toolkit
+cuda toolkit
+
+vscode dev container extention
