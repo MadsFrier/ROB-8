@@ -184,10 +184,10 @@ if __name__ == "__main__":
     data_dir = "/workspaces/ROB-8/docker/src/content/demo_images/"
     
     # choose image to load in
-    img_name = "dog.jpg"
+    img_name = "group_room.jpg"
     
     # choose prompt
-    prompt = 'sky,dog,grass,tree,other'
+    prompt = 'wall, blackboard, whiteboard, person, TV, computer, table, lamp,other'
     
     # choose whether to show the image
     show = True
