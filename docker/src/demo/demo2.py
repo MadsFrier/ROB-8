@@ -25,8 +25,8 @@ from models import resize_image, pad_image, crop_image
 def create_lseg_map_batch(load_depth, img_save_dir, camera_height, cs=0.05, gs=1000, depth_sample_rate=100):
     mask_version = 1 # 0, 1
 
-    crop_size = 240 # 480
-    base_size = 260 # 520
+    crop_size = 480 # 480
+    base_size = 520 # 520
     lang = "door,chair,ground,ceiling,other"
     labels = lang.split(",")
 

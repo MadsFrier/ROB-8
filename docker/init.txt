@@ -1,8 +1,8 @@
 cd src/content/
 gdown 1wjuiVcO92Rqer5gLk-X7hINfe4PCMQmu
 unzip -o 5LpN3gDmAk7_1.zip | tqdm --desc extracted --unit files --unit_scale --total `unzip -l 5LpN3gDmAk7_1.zip | tail -n 1 | xargs echo -n | cut -d' ' -f2` > /dev/null
-git clone https://github.com/vlmaps/vlmaps.git
-cd vlmaps
+# git clone https://github.com/vlmaps/vlmaps.git
+# cd vlmaps
 # git checkout demo
 
 #conda install habitat-sim -c conda-forge -c aihabitat
@@ -12,6 +12,8 @@ cd vlmaps
 # git checkout bfba72f47800819d858a6859b14cfa26122c2762
 # python3 setup.py develop --user
 
-cd /src/content/vlmaps/lseg/checkpoints
+cd /src/content/vlmaps/lseg
+mkdir checkpoints
+cd /checkpoints
 gdown 1ayk6NXURI_vIPlym16f_RG3ffxBWHxvb
-cd /content/vlmaps
+# cd /content/vlmaps

@@ -4,7 +4,6 @@ import time
 import types
 
 import clip
-from data import get_available_datasets, get_dataset
 from encoding.models import get_segmentation_model
 from encoding.nn import SegmentationLosses
 from encoding.utils import batch_intersection_union, batch_pix_accuracy, SegmentationMetric
@@ -171,35 +170,6 @@ class LSegmentationModule(pl.LightningModule):
             num_workers=16,
         )
 
-    def get_trainset(self, dset, augment=False, **kwargs):
-        print(kwargs)
-        if augment == True:
-            mode = "train_x"
-        else:
-            mode = "train"
-
-        print(mode)
-        dset = get_dataset(
-            dset, root=self.data_path, split="train", mode=mode, transform=self.train_transform, **kwargs
-        )
-
-        self.num_classes = dset.num_class
-        self.train_accuracy = pl.metrics.Accuracy()
-
-        return dset
-
-    def get_valset(self, dset, augment=False, **kwargs):
-        self.val_accuracy = pl.metrics.Accuracy()
-        self.val_iou = SegmentationMetric(self.num_classes)
-
-        if augment == True:
-            mode = "val_x"
-        else:
-            mode = "val"
-
-        print(mode)
-        return get_dataset(dset, root=self.data_path, split="val", mode=mode, transform=self.val_transform, **kwargs)
-
     def get_criterion(self, **kwargs):
         return SegmentationLosses(
             se_loss=kwargs["se_loss"],
@@ -216,7 +186,7 @@ class LSegmentationModule(pl.LightningModule):
         parser.add_argument("--data_path", type=str, help="path where dataset is stored")
         parser.add_argument(
             "--dataset",
-            choices=get_available_datasets(),
+            choices='',
             default="ade20k",
             help="dataset to train on",
         )

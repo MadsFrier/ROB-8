@@ -21,6 +21,8 @@ RUN apt-get update && apt-get install -y \
     libx11-6 \
     nvidia-container-toolkit \
     lshw \
+    libcanberra-gtk-module \
+    libcanberra-gtk3-module \
     #         #
     #         # Clean up
     && apt autoremove -y \

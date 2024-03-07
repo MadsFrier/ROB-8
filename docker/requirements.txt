@@ -1,6 +1,7 @@
 # install dependencies
 git+https://github.com/openai/CLIP.git
 torch-encoding
+#git+https://github.com/zhanghang1989/PyTorch-Encoding/
 ipython
 pytorch-lightning
 opencv-python

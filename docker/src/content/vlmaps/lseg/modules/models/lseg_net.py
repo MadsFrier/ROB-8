@@ -343,12 +343,13 @@ class LSegEnc(BaseModel):
 class LSegEncNet(LSegEnc):
     """Network for semantic segmentation."""
 
-    def __init__(self, labels, path=None, scale_factor=0.5, crop_size=480, **kwargs):
+    def __init__(self, labels, path=None, scale_factor=0.5, crop_size=480, base_size=520, **kwargs):
 
         features = kwargs["features"] if "features" in kwargs else 256
         kwargs["use_bn"] = True
 
         self.crop_size = crop_size
+        self.base_size = base_size
         self.scale_factor = scale_factor
         self.labels = labels
 
