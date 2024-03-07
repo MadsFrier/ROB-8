@@ -1,6 +1,0 @@
-docker engine (add user to group)
-nvidia-container-toolkit
-configure docker runtime
-cuda toolkit
-nvidia-docker2
-vscode dev container extention

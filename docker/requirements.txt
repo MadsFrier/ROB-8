@@ -1,7 +1,6 @@
 # install dependencies
 git+https://github.com/openai/CLIP.git
 torch-encoding
-#git+https://github.com/zhanghang1989/PyTorch-Encoding/
 ipython
 pytorch-lightning
 opencv-python
@@ -18,10 +17,3 @@ h5py
 gdown
 numpy
 pynvml
-
-# install habitat
-# cmake==3.14.4
-# tensorflow-gpu==2.9.1
-# gym==0.22.0
-# openai==0.8.0
-# grad-cam
