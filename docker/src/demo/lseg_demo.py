@@ -11,6 +11,7 @@ import os
 from PIL import Image
 import matplotlib.pyplot as plt
 
+# add directories to path for code to find it
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/utils')
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/lseg/modules')
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/lseg/modules/models')

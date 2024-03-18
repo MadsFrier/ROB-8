@@ -1,7 +1,11 @@
 import numpy as np
-from image_generation import load_depth
 import imageio
 import matplotlib.pyplot as plt
+
+def load_depth(depth_filepath):
+    with open(depth_filepath, 'rb') as f:
+        depth = np.load(f)
+    return depth
 
 def depth_npy2png(data_dir: str, depth_file: str, show: bool) -> None:
     """
@@ -33,7 +37,7 @@ if __name__ == "__main__":
     data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/"
     
     # choose depth image to load in
-    depth_name = "5LpN3gDmAk7_1.npy"
+    depth_name = "5LpN3gDmAk7_130.npy"
     
     # convert depth image to .png and show
     depth_npy2png(data_dir, depth_name, show=True)
