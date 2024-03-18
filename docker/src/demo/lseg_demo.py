@@ -10,7 +10,6 @@ import sys
 import os
 from PIL import Image
 import matplotlib.pyplot as plt
-from matplotlib.image import imread
 
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/utils')
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/lseg/modules')
@@ -184,10 +183,10 @@ if __name__ == "__main__":
     data_dir = "/workspaces/ROB-8/docker/src/content/demo_images/"
     
     # choose image to load in
-    img_name = "group_room.jpg"
+    img_name = "dog.jpg"
     
     # choose prompt
-    prompt = 'wall, blackboard, whiteboard, person, TV, computer, table, lamp,other'
+    prompt = 'tree, animal, sky, grass, other'
     
     # choose whether to show the image
     show = True
