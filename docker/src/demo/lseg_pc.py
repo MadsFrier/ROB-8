@@ -14,13 +14,15 @@ def show_images(rgbd_image):
 if __name__ == "__main__":
     
     # choose directory of images to load in
-    data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/"
-    
+
+    #data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/"
+    data_dir = "/home/gayath/project/ROB-8/docker/src/content/demo_data/" 
+
     # choose rgb image to load in
-    rgb_name = "5LpN3gDmAk7_130.png"
+    rgb_name = "5LpN3gDmAk7_140.png"
     
     # choose depth image to load in
-    depth_name = "5LpN3gDmAk7_130.png"
+    depth_name = "5LpN3gDmAk7_140.png"
     
     # load color and depth images
     color = o3d.io.read_image(data_dir + 'rgb/' + rgb_name)
@@ -43,3 +45,9 @@ if __name__ == "__main__":
     
     # show point cloud
     o3d.visualization.draw_geometries([pcd])
+
+    #save point cloud to directory
+    #data_directory = "/workspaces/ROB-8/docker/src/content/demo_data/5LpN3gDmAk7_130.pcd"
+    data_directory = "/home/gayath/project/ROB-8/docker/src/content/demo_data/pcd/5LpN3gDmAk7_140.pcd"
+    PointCloud = pcd
+    o3d.io.write_point_cloud(data_directory, PointCloud, format='auto', write_ascii=False, compressed=False, print_progress=False)
