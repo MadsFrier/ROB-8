@@ -10,6 +10,7 @@ import sys
 import os
 from PIL import Image
 import matplotlib.pyplot as plt
+import imageio
 
 # add directories to path for code to find it
 sys.path.insert(0, '/workspaces/ROB-8/docker/src/content/vlmaps/utils')
@@ -83,6 +84,9 @@ def lseg_image(data_dir, img_name, prompt, show, crop_size=480, base_size=520):
     
     with torch.no_grad():
         outputs, predict = get_lseg_feat(model, image_np, labels, transform)
+        #np.set_printoptions(threshold=sys.maxsize)
+        #print(predict)
+        
     
     if show:
         new_palette = get_new_pallete(len(labels))
@@ -97,8 +101,12 @@ def lseg_image(data_dir, img_name, prompt, show, crop_size=480, base_size=520):
         plt.legend(handles=patches, loc='upper right', bbox_to_anchor=(1.5, 1), prop={'size': 20})
         plt.axis('off')
         plt.imshow(seg)
+        plt.figure()
+        plt.imshow(predict)
         
         plt.show()
+    
+    return predict
 
 
 def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_size=480, \
@@ -181,16 +189,29 @@ def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_si
 if __name__ == "__main__":
     
     # choose directory of images to load in
-    data_dir = "/workspaces/ROB-8/docker/src/content/demo_images/" # USE THIS FOR DEMO
+    data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/rgb/"
     
     # choose image to load in
-    img_name = "dog.jpg" # USE THIS FOR DEMO
+    img_name = '5LpN3gDmAk7_' 
     
     # choose prompt
-    prompt = 'tree, animal, sky, grass, other' # USE THIS FOR DEMO
+    prompt = 'other, floor, ceiling, cabinet, counter, chair, painting, oven, window, wall, sofa, rug'
     
     # choose whether to show the image
-    show = True
+    show = False
     
     # segment image using lseg
-    lseg_image(data_dir, img_name, prompt, show)
+    i = 140
+    img_name = img_name + str(i) + '.png'
+    lseg_img = np.array(lseg_image(data_dir, img_name, prompt, show), dtype=np.uint16)
+        
+    # resize segmented image to match rgb
+    lseg_img = cv2.resize(lseg_img, dsize=(1080, 720), interpolation=cv2.INTER_CUBIC)
+
+                    
+    # save segmentation
+    img_name = img_name[:-4] + ".npy"
+    np.save("/workspaces/ROB-8/docker/src/content/demo_data/semantic/" + img_name, lseg_img)
+    #imageio.imwrite("/workspaces/ROB-8/docker/src/content/demo_data/semantic/" + img_name, lseg_img)
+        
+        

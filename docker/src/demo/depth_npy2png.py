@@ -20,11 +20,11 @@ def depth_npy2png(data_dir: str, depth_file: str, show: bool) -> None:
     None
     """
     # load depth image that is .npy to array
-    depth = load_depth(data_dir + 'depth/' + depth_file)
+    depth = load_depth(data_dir + depth_file)
     
     # save depth image as .png
     depth_png = np.array(depth * 255, dtype=np.uint16)
-    imageio.imwrite(data_dir + 'depth/' + depth_file[:-4] + '.png', depth_png)
+    imageio.imwrite(data_dir + depth_file[:-4] + '.png', depth_png)
     
     if show:
         plt.imshow(depth_png)
@@ -34,10 +34,10 @@ def depth_npy2png(data_dir: str, depth_file: str, show: bool) -> None:
     
 if __name__ == "__main__":
     # choose directory of images to load in
-    data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/"
+    data_dir = "/workspaces/ROB-8/docker/src/content/demo_data/depth/"
     
     # choose depth image to load in
-    depth_name = "5LpN3gDmAk7_130.npy"
+    depth_name = "5LpN3gDmAk7_1.npy"
     
     # convert depth image to .png and show
     depth_npy2png(data_dir, depth_name, show=True)
