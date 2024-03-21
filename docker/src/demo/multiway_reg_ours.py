@@ -6,9 +6,10 @@ def load_point_clouds(voxel_size=0.0):
     pcds = []
     #emo_icp_pcds = o3d.data.DemoICPPointClouds()
     for path in range(130, 141):
-        pcd = o3d.io.read_point_cloud("/home/gayath/project/ROB-8/docker/src/content/demo_data/pcd/5LpN3gDmAk7_"+ str(path) + ".pcd")
+        pcd = o3d.io.read_point_cloud("/workspaces/ROB-8/docker/src/content/demo_data/pcd/5LpN3gDmAk7_"+ str(path) + ".pcd")
+        pcd.estimate_normals()
         pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
-        pcds.append(pcd)
+        pcds.append(pcd_down)
     return pcds
 
 
@@ -21,13 +22,13 @@ def pairwise_registration(source, target):
     print("Apply point-to-plane ICP")
     icp_coarse = o3d.pipelines.registration.registration_icp(
         source, target, max_correspondence_distance_coarse, np.identity(4),
-        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=250))
+        o3d.pipelines.registration.TransformationEstimationPointToPlane())
+        #o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=2000))
     icp_fine = o3d.pipelines.registration.registration_icp(
         source, target, max_correspondence_distance_fine,
         icp_coarse.transformation,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=250))
+        o3d.pipelines.registration.TransformationEstimationPointToPlane())
+        #o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=2000))
     transformation_icp = icp_fine.transformation
     information_icp = o3d.pipelines.registration.get_information_matrix_from_point_clouds(
         source, target, max_correspondence_distance_fine,
@@ -42,6 +43,7 @@ def full_registration(pcds, max_correspondence_distance_coarse,
     n_pcds = len(pcds)
     for source_id in range(n_pcds):
         for target_id in range(source_id + 1, n_pcds):
+            print('pcd: ', target_id)
             transformation_icp, information_icp = pairwise_registration(
                 pcds[source_id], pcds[target_id])
             print("Build o3d.pipelines.registration.PoseGraph")
@@ -92,11 +94,7 @@ print("Transform points and display")
 for point_id in range(len(pcds_down)):
     print(pose_graph.nodes[point_id].pose)
     pcds_down[point_id].transform(pose_graph.nodes[point_id].pose)
-o3d.visualization.draw_geometries(pcds_down,
-                                  zoom=0.3412,
-                                  front=[0.4257, -0.2125, -0.8795],
-                                  lookat=[2.6172, 2.0475, 1.532],
-                                  up=[-0.0694, -0.9768, 0.2024])
+o3d.visualization.draw_geometries(pcds_down)
 
 pcds = load_point_clouds(voxel_size)
 pcd_combined = o3d.geometry.PointCloud()
@@ -105,11 +103,7 @@ for point_id in range(len(pcds)):
     pcd_combined += pcds[point_id]
 pcd_combined_down = pcd_combined.voxel_down_sample(voxel_size=voxel_size)
 o3d.io.write_point_cloud("multiway_registration.pcd", pcd_combined_down)
-o3d.visualization.draw_geometries([pcd_combined_down],
-                                  zoom=0.3412,
-                                  front=[0.4257, -0.2125, -0.8795],
-                                  lookat=[2.6172, 2.0475, 1.532],
-                                  up=[-0.0694, -0.9768, 0.2024])
+o3d.visualization.draw_geometries([pcd_combined_down])
 
 
 
