@@ -58,14 +58,16 @@ for i in lst_checked:
 
     # 3. Create rgbd image with rgb and segmentation seperated
 
-    # load color and depth image
+    # load color and depth image (right now we assume that images are aligned and hacve the same res)
     color = o3d.io.read_image(data_directory + rgb_folder + file_name + str(i) + '.png')
     depth = o3d.io.read_image(data_directory + depth_folder + file_name + str(i) + '.png')
     
     # create rgbd
     rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color, depth, convert_rgb_to_intensity=False)
+    # segd = o3d.geometry.RGBDImage.create_from_color_and_depth(seg, depth, convert_rgb_to_intensity=False)
     
-    show_rgb_depth(rgbd)
+    # show rgb and depth images
+    # show_rgb_depth(rgbd)
 
     # 4. Create point cloud for each image
 
