@@ -5,15 +5,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import imageio
 
+def load_npy(npy_filepath):
+    with open(npy_filepath, 'rb') as f:
+        npy = np.load(f)
+    return npy
+
 def save_camera_depth_to_png(depth_image, count):
     bridge = CvBridge()
     try:
         cv_image = bridge.imgmsg_to_cv2(depth_image, desired_encoding='passthrough')
         cv_image = np.array(cv_image, dtype=np.uint16)
-        #print(cv_image)
         np.save(f'../docker/src/content/spatial_map_data/depth/camera_depth_{count}.npy', cv_image)
-        plt.imshow(plt.imread(f'../docker/src/content/spatial_map_data/depth/camera_depth_{count}.npy'))
-        plt.show()
+        #plt.imshow(load_npy(f'../docker/src/content/spatial_map_data/depth/camera_depth_1.npy'))
+        #plt.show()
     except Exception as e:
         print(e)
 
@@ -25,7 +29,6 @@ def extract_camera_depth_from_bag(bag_file):
             save_camera_depth_to_png(msg, count)
             count += 1
             
-
 if __name__ == "__main__":
     bag_file = "2024-03-20-13-57-17.bag"
     extract_camera_depth_from_bag(bag_file)
