@@ -49,17 +49,18 @@ profile = pipeline.start(config)
 
 # Get frameset of color and depth
 frames = pipeline.wait_for_frames()
-# frames.get_depth_frame() is a 640x360 depth image
 
-depth_image = np.array(frames.get_depth_frame().get_data())
-color_image = np.array(frames.get_color_frame().get_data())
+# create align object
+align_to = rs.stream.color
+align = rs.align(align_to)
 
-# to get it from mm to m
-#depth_image = depth_image*0.001
+# Align the depth frame to color frame
+aligned_frames = align.process(frames)
 
-#depth_png = np.array(depth_image * 255, dtype=np.uint16)
+depth_image = np.array(aligned_frames.get_depth_frame().get_data())
+color_image = np.array(aligned_frames.get_color_frame().get_data())
 
-iteration = 0
+iteration = 5
 
 np.save('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy', depth_image)
 plt.imsave('/home/mads/github/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(iteration) + '.png', color_image)
@@ -68,9 +69,9 @@ plt.figure()
 plt.imshow(color_image)
 plt.figure()
 plt.imshow(depth_image)
-plt.figure()
-plt.imshow(load_npy('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy'))
+#plt.figure()
+#plt.imshow(load_npy('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy'))
 
-plt.show()
+#plt.show()
 
 pipeline.stop()

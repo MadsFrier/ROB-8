@@ -53,7 +53,8 @@ align = rs.align(align_to)
 
 # Get frameset of color and depth
 frames = pipeline.wait_for_frames()
-# frames.get_depth_frame() is a 640x360 depth image
+
+print(np.array(frames.get_depth_frame().get_data())[100][50])
 
 # Align the depth frame to color frame
 aligned_frames = align.process(frames)
@@ -63,6 +64,10 @@ aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is 
 color_frame = aligned_frames.get_color_frame()
 
 depth_image = np.array(aligned_depth_frame.get_data())
+
+print(aligned_depth_frame.get_data())
+print(rs.BufData(depth_image, dtype=np.uint16))
+
 color_image = np.array(color_frame.get_data())
 color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
 

@@ -18,3 +18,4 @@ gdown
 numpy
 pynvml
 open3d
+pyrealsense2

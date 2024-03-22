@@ -23,9 +23,6 @@ def depth_npy2png(data_dir: str, depth_file: str, show: bool) -> None:
     # load depth image that is .npy to array
     depth = load_depth(data_dir + depth_file)
     
-    # convert depth image from m to mm and make sure it is unit16
-    depth = np.uint16(depth*1000)
-    
     cv2.imwrite(data_dir + depth_file[:-4] + '.png', depth)
         
     if show:

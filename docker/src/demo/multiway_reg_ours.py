@@ -18,7 +18,7 @@ pcds_down = load_point_clouds(voxel_size)
 #pcds_down = o3d.io.read_point_cloud("/home/gayath/project/ROB-8/docker/src/content/demo_data/pcd/5LpN3gDmAk7_130.pcd")
 o3d.visualization.draw_geometries(pcds_down)
 
-def pairwise_registration(source, target):
+def pairwise_registration(source, target, max_correspondence_distance_fine):
     print("Apply point-to-plane ICP")
     icp_coarse = o3d.pipelines.registration.registration_icp(
         source, target, max_correspondence_distance_coarse, np.identity(4),
@@ -45,7 +45,7 @@ def full_registration(pcds, max_correspondence_distance_coarse,
         for target_id in range(source_id + 1, n_pcds):
             print('pcd: ', target_id)
             transformation_icp, information_icp = pairwise_registration(
-                pcds[source_id], pcds[target_id])
+                pcds[source_id], pcds[target_id], max_correspondence_distance_fine)
             print("Build o3d.pipelines.registration.PoseGraph")
             if target_id == source_id + 1:  # odometry case
                 odometry = np.dot(transformation_icp, odometry)
