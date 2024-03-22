@@ -13,6 +13,13 @@ Full pipeline for spatial map with landmarks
 import os
 import matplotlib.pyplot as plt
 import open3d as o3d
+import numpy as np
+import cv2
+import pyrealsense2 as rs
+
+from lseg_demo import lseg_image
+from depth_npy2png import depth_npy2png
+
 
 # functions
 
@@ -54,7 +61,28 @@ for i in lst_checked:
 
     # 2. Align depth and segmentation with rgb
 
-    # ignore for now
+    #segmentation
+    # choose prompt
+    prompt = 'other, floor, ceiling, cabinet, counter, chair, painting, oven, window, wall, sofa, rug'
+
+    # segment image using lseg
+    lseg_img = np.array(lseg_image(data_directory+rgb_folder, [i], prompt, show=True), dtype=np.uint16)
+
+    # resize segmented image to match rgb
+    lseg_img = cv2.resize(lseg_img, dsize=(1080, 720), interpolation=cv2.INTER_CUBIC)
+
+    # save segmentation
+    #img_name = img_name[:-4] + ".npy"
+    #np.save("/home/mads/github/ROB-8/docker/src/content/demo_data/semantic" + img_name, lseg_img)
+    #np.save("/workspaces/ROB-8/docker/src/content/demo_data/semantic/" + img_name, lseg_img)
+
+
+    #depth
+    # convert depth image to .png and show
+    depth_npy2png(data_directory+depth_folder, [i], show=True)
+
+
+   
 
     # 3. Create rgbd image with rgb and segmentation seperated
 
@@ -70,6 +98,7 @@ for i in lst_checked:
     # show_rgb_depth(rgbd)
 
     # 4. Create point cloud for each image
+
 
 
 
