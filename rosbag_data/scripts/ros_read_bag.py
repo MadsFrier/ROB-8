@@ -13,7 +13,7 @@ def extract_rgb_from_bag(bag_file):
             try:
                 cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
                 cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
-                cv2.imwrite(f'rgb_image_{count}.png', cv_image)
+                cv2.imwrite(f'../docker/src/content/spatial_map_data/rgb/rgb_image_{count}.png', cv_image)
                 count+=1
             except Exception as e:
                 print(e)
