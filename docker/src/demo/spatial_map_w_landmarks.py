@@ -41,7 +41,7 @@ def show_rgbg_o3d(rgbd_image):
 def load_point_clouds(voxel_size=0.0):
     pcds = []
     #emo_icp_pcds = o3d.data.DemoICPPointClouds()
-    for path in range(0, 6):
+    for path in range(2, 4):
         pcd = o3d.io.read_point_cloud("/workspaces/ROB-8/docker/src/content/rs_data/rgb_pcd/rs_"+ str(path) + ".pcd")
         pcd.estimate_normals()
         pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
@@ -149,7 +149,8 @@ if __name__ == "__main__":
         # 3. Create rgbd image with rgb and segmentation seperated
 
         # load color and depth image (right now we assume that images are aligned and have the same res)
-        color = o3d.io.read_image(data_directory + rgb_folder + file_name + str(i) + '.png')
+        color = cv2.cvtColor(cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.png'), cv2.COLOR_RGB2BGR)
+        color = o3d.geometry.Image(color)
         
         depth_npy = load_npy(data_directory + depth_folder + file_name + str(i) + '.npy')
                         
