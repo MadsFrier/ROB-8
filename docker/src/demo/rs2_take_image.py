@@ -1,17 +1,11 @@
-## License: Apache 2.0. See LICENSE file in root directory.
-## Copyright(c) 2017 Intel Corporation. All Rights Reserved.
 
-#####################################################
-##              Align Depth to Color               ##
-#####################################################
-
-# First import the library
 import pyrealsense2 as rs
-# Import Numpy for easy array manipulation
 import numpy as np
-# Import OpenCV for easy image rendering
 import cv2
 import matplotlib.pyplot as plt
+import time
+
+stream = True
 
 def load_npy(npy_filepath):
     with open(npy_filepath, 'rb') as f:
@@ -47,33 +41,39 @@ config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
 # Start streaming
 profile = pipeline.start(config)
 
-# Get frameset of color and depth
-frames = pipeline.wait_for_frames()
+try:
+  for i in range(0, 50):
+    frames = pipeline.wait_for_frames()
 
-# create align object
-align_to = rs.stream.color
-align = rs.align(align_to)
+    print('image ', i, ' taken, ', 50-i, ' images left')
 
-# Align the depth frame to color frame
-aligned_frames = align.process(frames)
+    # create align object
+    align_to = rs.stream.color
+    align = rs.align(align_to)
 
-depth_image = np.array(aligned_frames.get_depth_frame().get_data())
-color_image = np.array(aligned_frames.get_color_frame().get_data())
+    # Align the depth frame to color frame
+    aligned_frames = align.process(frames)
 
-iteration = 0
+    depth_image = np.array(aligned_frames.get_depth_frame().get_data())
+    color_image = np.array(aligned_frames.get_color_frame().get_data())
 
-np.save('/home/gayath/project/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy', depth_image)
-plt.imsave('/home/gayath/project/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(iteration) + '.png', color_image)
+    np.save('/home/gayath/project/ROB-8/docker/src/content/rs_data/depth/rs_' + str(i) + '.npy', depth_image)
+    plt.imsave('/home/gayath/project/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(i) + '.png', color_image)
 
-plt.figure()
-plt.imshow(color_image)
-plt.figure()
-plt.imshow(depth_image)
-#plt.figure()
-#plt.imshow(load_npy('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy'))
+    plt.figure()
+    plt.imshow(color_image)
+    plt.figure()
+    plt.imshow(depth_image)
+    #plt.figure()
+    #plt.imshow(load_npy('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy'))
 
-#plt.show()
-
-print('images taken')
-
-pipeline.stop()
+    #plt.show()
+    if not stream:
+        print('images taken')
+        pipeline.stop()
+        break
+    
+    time.sleep(1)
+    
+finally:
+    pipeline.stop()
