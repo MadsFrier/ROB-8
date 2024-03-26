@@ -57,8 +57,8 @@ try:
     depth_image = np.array(aligned_frames.get_depth_frame().get_data())
     color_image = np.array(aligned_frames.get_color_frame().get_data())
 
-    np.save('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(i) + '.npy', depth_image)
-    plt.imsave('/home/mads/github/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(i) + '.png', color_image)
+    np.save('/home/gayath/project/ROB-8/docker/src/content/rs_data/depth/rs_' + str(i) + '.npy', depth_image)
+    plt.imsave('/home/gayath/project/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(i) + '.png', color_image)
 
     plt.figure()
     plt.imshow(color_image)
