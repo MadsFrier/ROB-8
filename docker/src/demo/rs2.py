@@ -54,8 +54,6 @@ align = rs.align(align_to)
 # Get frameset of color and depth
 frames = pipeline.wait_for_frames()
 
-print(np.array(frames.get_depth_frame().get_data())[100][50])
-
 # Align the depth frame to color frame
 aligned_frames = align.process(frames)
 
