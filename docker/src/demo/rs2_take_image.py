@@ -62,8 +62,8 @@ color_image = np.array(aligned_frames.get_color_frame().get_data())
 
 iteration = 0
 
-np.save('/home/mads/github/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy', depth_image)
-plt.imsave('/home/mads/github/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(iteration) + '.png', color_image)
+np.save('/home/gayath/project/ROB-8/docker/src/content/rs_data/depth/rs_' + str(iteration) + '.npy', depth_image)
+plt.imsave('/home/gayath/project/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(iteration) + '.png', color_image)
 
 plt.figure()
 plt.imshow(color_image)
