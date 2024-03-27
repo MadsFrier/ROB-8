@@ -15,7 +15,7 @@ def load_npy(npy_filepath):
     return npy
 
 #semantic_img = np.load(path_dir + sem_folder + file_name + '.npy')
-rgb_img = plt.imread(path_dir + rgb_folder + file_name + '.png')
+rgb_img = plt.imread(path_dir + rgb_folder + file_name + '.jpg')
 depth_img = load_npy(path_dir + depth_folder + file_name + '.npy')
 
 

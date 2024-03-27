@@ -59,7 +59,7 @@ try:
     count_im = 72
 
     np.save('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/depth/rs_' + str(count_im) + '.npy', depth_image)
-    plt.imsave('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/rgb/rs_' + str(count_im) + '.png', color_image)
+    plt.imsave('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/rgb/rs_' + str(count_im) + '.jpg', color_image)
 
     plt.figure()
     plt.imshow(color_image)

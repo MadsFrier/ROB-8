@@ -18,7 +18,7 @@ import cv2
 import pyrealsense2 as rs
 import sys
 
-from lseg_demo import load_lseg, run_lseg
+from lseg_demo import load_lseg, run_lseg, torch_clear_cache
 
 # functions
 
@@ -105,6 +105,8 @@ if __name__ == "__main__":
     rgb_folder = 'rgb/'
     pose_folder = 'pose/'
     rgb_pcd_folder = 'rgb_pcd/'
+    seg_pcd_folder = 'seg_pcd/'
+
     map_folder = 'maps/'
 
     # file name of the data
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     # sort the list of files
     int_lst = [int(sub[3:-4]) for sub in lst]
     int_lst = sorted(int_lst)
-    lst = [ 'rs_' + str(i)+".png" for i in int_lst]
+    lst = [ 'rs_' + str(i)+".jpg" for i in int_lst]
             
     # check if file name is in each element in the list and extract index
     lst_checked = []
@@ -126,35 +128,42 @@ if __name__ == "__main__":
             
     print(len(lst_checked), " images loaded")
     
-    print('loading lseg model...')
-    
-    # choose prompt
-    prompt = 'other, floor, ceiling, table'
-    
-    model, labels = load_lseg(prompt)
-
     # loop though each index and create and save point cloud
     for i in lst_checked:
         print("Processing image ", i)
                 
         #segmentation
         
+        # choose prompt
+        prompt = 'other, floor, ceiling, table, cabinet, lamp, chair'
+        
+        # load lseg model
+        model, labels = load_lseg(prompt)
+        
         # segment image using lseg
-        lseg_img = np.array(run_lseg(data_directory+rgb_folder, 'rs_' + str(i) + '.png', show=True), dtype=np.uint16)
+        lseg_img = run_lseg(data_directory+rgb_folder, 'rs_' + str(i) + '.jpg', model, labels, show=False)
+        lseg_img = np.array(lseg_img, dtype=np.uint8)
+        
+        torch_clear_cache(print_cache=True)
+
+        color = cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.jpg')
+        info = color.shape
 
         # resize segmented image to match rgb
-        #lseg_img = cv2.resize(lseg_img, dsize=(1080, 720), interpolation=cv2.INTER_CUBIC)
-
+        lseg_img = cv2.resize(lseg_img, dsize=(info[1], info[0]), interpolation=cv2.INTER_CUBIC)
+        lseg_img = lseg_img*15
+        lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_GRAY2BGR)
+        
         # save segmentation
-        #img_name = img_name[:-4] + ".npy"
-        #np.save("/home/mads/github/ROB-8/docker/src/content/demo_data/semantic" + img_name, lseg_img)
-        #np.save("/workspaces/ROB-8/docker/src/content/demo_data/semantic/" + img_name, lseg_img)
+        np.save("/workspaces/ROB-8/docker/src/content/rs_data/semantic/" + file_name + str(i) + ".npy", lseg_img)
 
         # 3. Create rgbd image with rgb and segmentation seperated
 
-        # load color and depth image (right now we assume that images are aligned and have the same res)
-        color = cv2.cvtColor(cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.png'), cv2.COLOR_RGB2BGR)
+        # load color , seg, and depth image (right now we assume that images are aligned and have the same res)
+        color = cv2.cvtColor(cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.jpg'), cv2.COLOR_RGB2BGR)
         color = o3d.geometry.Image(color)
+        
+        lseg_img = o3d.geometry.Image(lseg_img)
         
         depth_npy = load_npy(data_directory + depth_folder + file_name + str(i) + '.npy')
                         
@@ -162,7 +171,7 @@ if __name__ == "__main__":
              
         # create rgbd
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color, depth, convert_rgb_to_intensity=False, depth_trunc=11.0)
-        # segd = o3d.geometry.RGBDImage.create_from_color_and_depth(seg, depth, convert_rgb_to_intensity=False)
+        segd = o3d.geometry.RGBDImage.create_from_color_and_depth(lseg_img, depth, convert_rgb_to_intensity=False, depth_trunc=11.0)
         
         # show rgb and depth images
         #show_rgbg_o3d(rgbd)
@@ -170,16 +179,21 @@ if __name__ == "__main__":
         # 4. Create point cloud for each image
         
         # create point cloud
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
+        rgb_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
+        seg_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(segd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
 
         # flip the orientation, so it looks upright, not upside-down
-        pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+        rgb_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+        seg_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+
         
         # show point cloud
-        #o3d.visualization.draw_geometries([pcd])
+        o3d.visualization.draw_geometries([rgb_pcd])
+        o3d.visualization.draw_geometries([seg_pcd])
         
         # save point cloud
-        o3d.io.write_point_cloud(data_directory + rgb_pcd_folder + file_name + str(i) + '.pcd', pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+        o3d.io.write_point_cloud(data_directory + rgb_pcd_folder + file_name + str(i) + '.pcd', rgb_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+        o3d.io.write_point_cloud(data_directory + seg_pcd_folder + file_name + str(i) + '.pcd', seg_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
 
     # 5. Combine point clouds with multiway registration to create coherent spatial map with landmarks
     print('loading point clouds...')
