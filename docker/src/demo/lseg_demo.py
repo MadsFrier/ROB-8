@@ -73,11 +73,8 @@ def load_lseg(prompt, crop_size=480, base_size=520):
     
     return model, labels
 
-def run_lseg(data_dir, img_name, model, labels, show):
+def run_lseg(image_np, model, labels, show):
     with torch.no_grad():
-        img_path = data_dir + img_name
-        image = Image.open(img_path)
-        image_np = np.array(image)
         transform = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -188,13 +185,11 @@ def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_si
 def torch_clear_cache(print_cache):
     with torch.no_grad():
         if print_cache:
-            print('Before clearing: ', torch.cuda.memory_allocated())
-            print('Before clearing: ', torch.cuda.memory_reserved())
+            print('Before clearing: ', torch.cuda.memory_allocated(), torch.cuda.memory_reserved())
         gc.collect()
         torch.cuda.empty_cache()
         if print_cache:
-            print('After clearing: ', torch.cuda.memory_allocated())
-            print('After clearing: ', torch.cuda.memory_reserved())
+            print('After clearing: ', torch.cuda.memory_allocated(), torch.cuda.memory_reserved())
 
 if __name__ == "__main__":
     
@@ -213,4 +208,6 @@ if __name__ == "__main__":
     # segment image using lseg
     model, labels = load_lseg(prompt)
     
-    run_lseg(data_dir, img_name, model, labels, show)
+    img = cv2.cvtColor(cv2.imread(data_dir + img_name), cv2.COLOR_BGR2RGB)
+    
+    run_lseg(img, model, labels, show)

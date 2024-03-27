@@ -15,8 +15,6 @@ import matplotlib.pyplot as plt
 import open3d as o3d
 import numpy as np
 import cv2
-import pyrealsense2 as rs
-import sys
 
 from lseg_demo import load_lseg, run_lseg, torch_clear_cache
 
@@ -36,15 +34,13 @@ def show_rgbg_o3d(rgbd_image):
     plt.imshow(rgbd_image.depth)
     plt.show()  
 
-def load_point_clouds(num_files, voxel_size=0.0):
+def load_point_clouds(num_files, data_directory, folder, file_name, voxel_size=0.0):
     pcds = []
-    #emo_icp_pcds = o3d.data.DemoICPPointClouds()
-    for path in range(0, num_files):
-        pcd = o3d.io.read_point_cloud("/workspaces/ROB-8/docker/src/content/rs_data/rgb_pcd/rs_"+ str(path) + ".pcd")
+    for i in range(0, num_files):
+        pcd = o3d.io.read_point_cloud(data_directory + folder + file_name + str(i) + '.pcd')
         pcd.estimate_normals()
         pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
         pcds.append(pcd_down)
-        #o3d.visualization.draw_geometries([pcd_down])
     return pcds
 
 def pairwise_registration(source, target, max_correspondence_distance_fine, max_correspondence_distance_coarse):
@@ -94,11 +90,12 @@ def full_registration(pcds, max_correspondence_distance_coarse,
 
 if __name__ == "__main__":
 
-    # 1. Load rgb, depth, pose
-
     # Directory of data
-    #data_directory = "/home/mads/github/ROB-8/docker/src/content/rs_data/" # This is for users outside of docker only
-    data_directory = "/workspaces/ROB-8/docker/src/content/rs_data/" # This is for users inside of docker only
+    data_directory = "/workspaces/ROB-8/docker/src/content/" # This is for users inside of docker only
+    
+    # choose dataset
+    dataset = 'office_data/'
+    data_directory = data_directory + dataset
 
     # specific folders for data
     depth_folder = 'depth/'
@@ -106,19 +103,35 @@ if __name__ == "__main__":
     pose_folder = 'pose/'
     rgb_pcd_folder = 'rgb_pcd/'
     seg_pcd_folder = 'seg_pcd/'
-
     map_folder = 'maps/'
+    sem_folder = 'semantic/'
 
     # file name of the data
-    file_name = "rs_"
+    file_name = "office_"
+    
+    # choose file format
+    rgb_format = '.jpg'
+    depth_format = '.png'
+    
+    # choose prompt
+    prompt = 'other, floor, ceiling, table, cabinet, lamp, chair, curtain, window'
+    
+    # set voxel grid size
+    voxel_size = 0.01
+    
+    # allow for lseg to run
+    allow_lseg = True
+    
+    # Choose to create rgb or seg pcd
+    pcd_folder = seg_pcd_folder
 
     # get list of files in the directory
     lst = os.listdir(data_directory+rgb_folder)
-    
+        
     # sort the list of files
-    int_lst = [int(sub[3:-4]) for sub in lst]
+    int_lst = [int(sub[len(file_name):-4]) for sub in lst]
     int_lst = sorted(int_lst)
-    lst = [ 'rs_' + str(i)+".jpg" for i in int_lst]
+    lst = [file_name + str(i)+rgb_format for i in int_lst]
             
     # check if file name is in each element in the list and extract index
     lst_checked = []
@@ -126,79 +139,77 @@ if __name__ == "__main__":
         if file_name in i:
             lst_checked.append(i[len(file_name):-4])
             
+    ### !!! FOR TESTING ONLY !!! ###
+    
+    lst_checked = lst_checked[0:3]
+    
+    ################################
+            
     print(len(lst_checked), " images loaded")
     
     # loop though each index and create and save point cloud
     for i in lst_checked:
-        print("Processing image ", i)
-                
-        #segmentation
+        print("Processing image", i, 'of', len(lst_checked))
         
-        # choose prompt
-        prompt = 'other, floor, ceiling, table, cabinet, lamp, chair'
-        
-        # load lseg model
-        model, labels = load_lseg(prompt)
-        
-        # segment image using lseg
-        lseg_img = run_lseg(data_directory+rgb_folder, 'rs_' + str(i) + '.jpg', model, labels, show=False)
-        lseg_img = np.array(lseg_img, dtype=np.uint8)
-        
-        torch_clear_cache(print_cache=True)
+        # load rgb, depth
+        rgb_img = cv2.imread(data_directory + rgb_folder + file_name + str(i) + rgb_format)
+        if depth_format == '.npy':
+            depth_img = load_npy(data_directory + depth_folder + file_name + str(i) + depth_format).astype(np.uint16)
+        else:
+            depth_img = cv2.imread(data_directory + depth_folder + file_name + str(i) + depth_format, cv2.IMREAD_ANYDEPTH)
 
-        color = cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.jpg')
-        info = color.shape
+            
+        if allow_lseg:            
+            # load lseg model and segment rgb image
+            model, labels = load_lseg(prompt)
+            lseg_img = np.array(run_lseg(rgb_img, model, labels, show=False), dtype=np.uint8)
 
-        # resize segmented image to match rgb
-        lseg_img = cv2.resize(lseg_img, dsize=(info[1], info[0]), interpolation=cv2.INTER_CUBIC)
-        lseg_img = lseg_img*15
-        lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_GRAY2BGR)
-        
-        # save segmentation
-        np.save("/workspaces/ROB-8/docker/src/content/rs_data/semantic/" + file_name + str(i) + ".npy", lseg_img)
+            #clear cache to clear GPU memory for next iteration
+            torch_clear_cache(print_cache=True)
 
-        # 3. Create rgbd image with rgb and segmentation seperated
+            # resize segmented image to match rgb
+            lseg_img = cv2.resize(lseg_img, dsize=(rgb_img.shape[1], rgb_img.shape[0]), interpolation=cv2.INTER_CUBIC)
+            lseg_img = lseg_img*15 # temp
+            lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_GRAY2BGR)
+            
+            # save segmentation
+            np.save(data_directory + sem_folder + file_name + str(i) + ".npy", lseg_img)
 
         # load color , seg, and depth image (right now we assume that images are aligned and have the same res)
-        color = cv2.cvtColor(cv2.imread(data_directory + rgb_folder + file_name + str(i) + '.jpg'), cv2.COLOR_RGB2BGR)
-        color = o3d.geometry.Image(color)
         
-        lseg_img = o3d.geometry.Image(lseg_img)
-        
-        depth_npy = load_npy(data_directory + depth_folder + file_name + str(i) + '.npy')
-                        
-        depth = o3d.geometry.Image(depth_npy.astype(np.uint16))   
+        bgr_o3d_img = o3d.geometry.Image(cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR))
+        depth_o3d_img = o3d.geometry.Image(depth_img)   
              
         # create rgbd
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color, depth, convert_rgb_to_intensity=False, depth_trunc=11.0)
-        segd = o3d.geometry.RGBDImage.create_from_color_and_depth(lseg_img, depth, convert_rgb_to_intensity=False, depth_trunc=11.0)
+        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(bgr_o3d_img, depth_o3d_img, convert_rgb_to_intensity=False, depth_trunc=11.0)
         
         # show rgb and depth images
-        #show_rgbg_o3d(rgbd)
-
-        # 4. Create point cloud for each image
+        # show_rgbg_o3d(rgbd)
+        # show_rgbd_o3d(segd)
         
         # create point cloud
         rgb_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
-        seg_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(segd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
 
         # flip the orientation, so it looks upright, not upside-down
         rgb_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
-        seg_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
-
         
         # show point cloud
-        o3d.visualization.draw_geometries([rgb_pcd])
-        o3d.visualization.draw_geometries([seg_pcd])
+        #o3d.visualization.draw_geometries([rgb_pcd])
+        #o3d.visualization.draw_geometries([seg_pcd])
         
         # save point cloud
         o3d.io.write_point_cloud(data_directory + rgb_pcd_folder + file_name + str(i) + '.pcd', rgb_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
-        o3d.io.write_point_cloud(data_directory + seg_pcd_folder + file_name + str(i) + '.pcd', seg_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+
+        if allow_lseg:
+            lseg_o3d_img = o3d.geometry.Image(lseg_img) 
+            segd = o3d.geometry.RGBDImage.create_from_color_and_depth(lseg_o3d_img, depth_o3d_img, convert_rgb_to_intensity=False, depth_trunc=11.0)
+            seg_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(segd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
+            seg_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+            o3d.io.write_point_cloud(data_directory + seg_pcd_folder + file_name + str(i) + '.pcd', seg_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
 
     # 5. Combine point clouds with multiway registration to create coherent spatial map with landmarks
     print('loading point clouds...')
-    voxel_size = 0.1
-    pcds_down = load_point_clouds(len(lst_checked), voxel_size)
+    pcds_down = load_point_clouds(len(lst_checked), data_directory, pcd_folder, file_name, voxel_size)
     #o3d.visualization.draw_geometries(pcds_down)
     
     print("Full registration ...")
@@ -227,16 +238,15 @@ if __name__ == "__main__":
     for point_id in range(len(pcds_down)):
         print(pose_graph.nodes[point_id].pose)
         pcds_down[point_id].transform(pose_graph.nodes[point_id].pose)
-    #o3d.visualization.draw_geometries(pcds_down)
     
     print('Visualising combined point clouds...')
 
-    pcds = load_point_clouds(len(lst_checked), voxel_size)
+    pcds = load_point_clouds(len(lst_checked), data_directory, pcd_folder, file_name, voxel_size)
     pcd_combined = o3d.geometry.PointCloud()
     for point_id in range(len(pcds)):
         pcds[point_id].transform(pose_graph.nodes[point_id].pose)
         pcd_combined += pcds[point_id]
     pcd_combined_down = pcd_combined.voxel_down_sample(voxel_size=voxel_size)
-    o3d.io.write_point_cloud("src/content/rs_data/maps/map.pcd", pcd_combined_down)
+    o3d.io.write_point_cloud(data_directory + map_folder + file_name + str(i) + '.pcd', pcd_combined_down, format='auto', write_ascii=False, compressed=False, print_progress=False)
     print('Point cloud saved')
     o3d.visualization.draw_geometries([pcd_combined_down])
