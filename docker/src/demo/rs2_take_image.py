@@ -5,7 +5,7 @@ import cv2
 import matplotlib.pyplot as plt
 import time
 
-stream = True
+stream = False
 
 def load_npy(npy_filepath):
     with open(npy_filepath, 'rb') as f:
@@ -56,9 +56,10 @@ try:
 
     depth_image = np.array(aligned_frames.get_depth_frame().get_data())
     color_image = np.array(aligned_frames.get_color_frame().get_data())
+    count_im = 72
 
-    np.save('/home/gayath/project/ROB-8/docker/src/content/rs_data/depth/rs_' + str(i) + '.npy', depth_image)
-    plt.imsave('/home/gayath/project/ROB-8/docker/src/content/rs_data/rgb/rs_' + str(i) + '.png', color_image)
+    np.save('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/depth/rs_' + str(count_im) + '.npy', depth_image)
+    plt.imsave('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/rgb/rs_' + str(count_im) + '.png', color_image)
 
     plt.figure()
     plt.imshow(color_image)
