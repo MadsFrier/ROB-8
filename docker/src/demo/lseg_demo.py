@@ -22,7 +22,7 @@ from clip_mapping_utils import get_new_pallete, get_new_mask_pallete
 from lseg_net import LSegEncNet
 from models import resize_image, pad_image, crop_image, LSeg_MultiEvalModule
 
-def lseg_image(data_dir, img_name, prompt, show, crop_size=480, base_size=520):
+def load_lseg(prompt, crop_size=480, base_size=520):
 
     labels = prompt.split(",")
 
@@ -70,6 +70,9 @@ def lseg_image(data_dir, img_name, prompt, show, crop_size=480, base_size=520):
     evaluator = LSeg_MultiEvalModule(model, scales=scales, flip=True).cuda()
     evaluator.eval()
     
+    return model, labels
+
+def run_lseg(data_dir, img_name, model, labels, show):
     img_path = data_dir + img_name
     image = Image.open(img_path)
     image_np = np.array(image)
@@ -99,7 +102,6 @@ def lseg_image(data_dir, img_name, prompt, show, crop_size=480, base_size=520):
         plt.imshow(seg)
         
         plt.show()
-
 
 def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_size=480, \
                  base_size=520, norm_mean=[0.5, 0.5, 0.5], norm_std=[0.5, 0.5, 0.5]):
@@ -193,4 +195,6 @@ if __name__ == "__main__":
     show = True
     
     # segment image using lseg
-    lseg_image(data_dir, img_name, prompt, show)
+    model, labels = load_lseg(prompt)
+    
+    run_lseg(data_dir, img_name, model, labels, show)
