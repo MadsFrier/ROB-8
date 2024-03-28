@@ -88,6 +88,9 @@ def full_registration(pcds, max_correspondence_distance_coarse,
                                                              uncertain=True))
     return pose_graph
 
+def flatten(lst):
+    return [x for xs in lst for x in xs]
+
 if __name__ == "__main__":
 
     # Directory of data
@@ -115,6 +118,40 @@ if __name__ == "__main__":
     
     # choose prompt
     prompt = 'other, floor, ceiling, table, cabinet, lamp, chair, curtain, window'
+    
+    # colors associated with prompt
+    colors = [
+    [0, 0, 0],       # Black
+    [255, 0, 0],     # Red
+    [0, 255, 0],     # Lime
+    [0, 0, 255],     # Blue
+    [255, 255, 0],   # Yellow
+    [0, 255, 255],   # Cyan
+    [255, 0, 255],   # Magenta
+    [192, 192, 192], # Silver
+    [128, 128, 128], # Gray
+    [128, 0, 0],     # Maroon
+    [128, 128, 0],   # Olive
+    [0, 128, 0],     # Green
+    [128, 0, 128],   # Purple
+    [0, 128, 128],   # Teal
+    [0, 0, 128],     # Navy
+    [255, 165, 0],   # Orange
+    [255, 215, 0],   # Gold
+    [255, 255, 255], # White
+    [255, 105, 180], # Hot Pink
+    [75, 0, 130],    # Indigo
+    [255, 192, 203], # Pink
+    [0, 255, 127],   # Spring Green
+    [0, 206, 209],   # Dark Turquoise
+    [148, 0, 211],   # Dark Violet
+    [244, 164, 96]   # Sandy Brown
+    ]
+
+    # check if there is enough colors for prompt
+    if len(colors) < len(prompt.split(',')):
+        print('Not enough colors for the amount of prompts, fix that')
+        exit()
     
     # set voxel grid size
     voxel_size = 0.01
@@ -160,20 +197,31 @@ if __name__ == "__main__":
 
             
         if allow_lseg:            
-            # load lseg model and segment rgb image
+            # load lseg model and segment rgb image            
             model, labels = load_lseg(prompt)
-            lseg_img = np.array(run_lseg(rgb_img, model, labels, show=False), dtype=np.uint8)
+            
+            palette = flatten(colors[0:len(labels)])
+            
+            lseg_img, mask_img, patches = run_lseg(rgb_img, model, labels, palette, show=False)
+            lseg_img = np.array(lseg_img, dtype=np.uint8)
+            mask_img = np.array(mask_img)
 
             #clear cache to clear GPU memory for next iteration
             torch_clear_cache(print_cache=True)
-
-            # resize segmented image to match rgb
+            
+            # resize segmented image to match rgb and convert to rgb to add color corresponding to labels
             lseg_img = cv2.resize(lseg_img, dsize=(rgb_img.shape[1], rgb_img.shape[0]), interpolation=cv2.INTER_CUBIC)
-            lseg_img = lseg_img*15 # temp
-            lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_GRAY2BGR)
+            mask_img = cv2.resize(mask_img, dsize=(rgb_img.shape[1], rgb_img.shape[0]), interpolation=cv2.INTER_CUBIC)
+            
+            lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_GRAY2RGB)
+
+            #for i in range(len(labels)):
+            #    lseg_img = np.where(lseg_img == [i, i, i], colors[i], lseg_img) 
+                         
+            #lseg_img = cv2.cvtColor(lseg_img, cv2.COLOR_RGB2BGR)
             
             # save segmentation
-            np.save(data_directory + sem_folder + file_name + str(i) + ".npy", lseg_img)
+            plt.imsave(data_directory + sem_folder + file_name + str(i) + ".png", mask_img)
 
         # load color , seg, and depth image (right now we assume that images are aligned and have the same res)
         
@@ -195,16 +243,17 @@ if __name__ == "__main__":
         
         # show point cloud
         #o3d.visualization.draw_geometries([rgb_pcd])
-        #o3d.visualization.draw_geometries([seg_pcd])
         
         # save point cloud
         o3d.io.write_point_cloud(data_directory + rgb_pcd_folder + file_name + str(i) + '.pcd', rgb_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
 
         if allow_lseg:
             lseg_o3d_img = o3d.geometry.Image(lseg_img) 
-            segd = o3d.geometry.RGBDImage.create_from_color_and_depth(lseg_o3d_img, depth_o3d_img, convert_rgb_to_intensity=False, depth_trunc=11.0)
+            mask_o3d_img = o3d.geometry.Image(cv2.cvtColor(mask_img, cv2.COLOR_RGB2BGR))
+            segd = o3d.geometry.RGBDImage.create_from_color_and_depth(mask_o3d_img, depth_o3d_img, convert_rgb_to_intensity=False, depth_trunc=11.0)
             seg_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(segd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
             seg_pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+            o3d.visualization.draw_geometries([seg_pcd])
             o3d.io.write_point_cloud(data_directory + seg_pcd_folder + file_name + str(i) + '.pcd', seg_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
 
     # 5. Combine point clouds with multiway registration to create coherent spatial map with landmarks
@@ -247,6 +296,6 @@ if __name__ == "__main__":
         pcds[point_id].transform(pose_graph.nodes[point_id].pose)
         pcd_combined += pcds[point_id]
     pcd_combined_down = pcd_combined.voxel_down_sample(voxel_size=voxel_size)
-    o3d.io.write_point_cloud(data_directory + map_folder + file_name + str(i) + '.pcd', pcd_combined_down, format='auto', write_ascii=False, compressed=False, print_progress=False)
+    o3d.io.write_point_cloud(data_directory + map_folder + file_name[:-1] + '.pcd', pcd_combined_down, format='auto', write_ascii=False, compressed=False, print_progress=False)
     print('Point cloud saved')
     o3d.visualization.draw_geometries([pcd_combined_down])

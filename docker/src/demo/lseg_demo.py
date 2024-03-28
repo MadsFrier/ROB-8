@@ -73,7 +73,7 @@ def load_lseg(prompt, crop_size=480, base_size=520):
     
     return model, labels
 
-def run_lseg(image_np, model, labels, show):
+def run_lseg(image_np, model, labels, palette, show):
     with torch.no_grad():
         transform = transforms.Compose(
             [
@@ -85,10 +85,11 @@ def run_lseg(image_np, model, labels, show):
         
         with torch.no_grad():
             outputs, predict = get_lseg_feat(model, image_np, labels, transform)
+            mask, patches = get_new_mask_pallete(predict, palette, out_label_flag=True, labels=labels)
         
         if show:
             new_palette = get_new_pallete(len(labels))
-            mask, patches = get_new_mask_pallete(predict, new_palette, out_label_flag=True, labels=labels)
+            print(new_palette)
             img = image[0].permute(1,2,0)
             img = img * 0.5 + 0.5
             img = Image.fromarray(np.uint8(255*img)).convert("RGBA")
@@ -99,10 +100,9 @@ def run_lseg(image_np, model, labels, show):
             plt.legend(handles=patches, loc='upper right', bbox_to_anchor=(1.5, 1), prop={'size': 20})
             plt.axis('off')
             plt.imshow(seg)
-            
             plt.show()
     
-    return predict
+    return predict, mask.convert('RGB'), patches
 
 def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_size=480, \
                  base_size=520, norm_mean=[0.5, 0.5, 0.5], norm_std=[0.5, 0.5, 0.5]):
