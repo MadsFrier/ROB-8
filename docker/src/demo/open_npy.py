@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-data_dir = '/workspaces/ROB-8/docker/src/content/office_data/'
-data_folder = 'semantic/'
-file_name = 'office_1.npy'
+data_dir = '/workspaces/ROB-8/docker/src/content/demo_data/'
+data_folder = 'depth/'
+file_name = '5LpN3gDmAk7_130.npy'
 
 def load_npy(npy_filepath):
     with open(npy_filepath, 'rb') as f:
