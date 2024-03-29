@@ -89,7 +89,6 @@ def run_lseg(image_np, model, labels, palette, show):
         
         if show:
             new_palette = get_new_pallete(len(labels))
-            print(new_palette)
             img = image[0].permute(1,2,0)
             img = img * 0.5 + 0.5
             img = Image.fromarray(np.uint8(255*img)).convert("RGBA")
@@ -210,4 +209,6 @@ if __name__ == "__main__":
     
     img = cv2.cvtColor(cv2.imread(data_dir + img_name), cv2.COLOR_BGR2RGB)
     
-    run_lseg(img, model, labels, show)
+    palette = new_palette = get_new_pallete(len(labels))
+    
+    run_lseg(img, model, labels, palette, show)

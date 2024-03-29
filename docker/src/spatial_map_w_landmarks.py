@@ -16,7 +16,7 @@ import open3d as o3d
 import numpy as np
 import cv2
 
-from lseg_demo import load_lseg, run_lseg, torch_clear_cache
+from demo.lseg_demo import load_lseg, run_lseg, torch_clear_cache
 
 # functions
 
