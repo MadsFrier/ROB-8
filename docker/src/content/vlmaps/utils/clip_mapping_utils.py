@@ -240,7 +240,7 @@ def get_new_mask_pallete(npimg, new_palette, out_label_flag=False, labels=None, 
     """Get image color pallete for visualizing masks"""
     # put colormap
     out_img = Image.fromarray(npimg.squeeze().astype("uint8"))
-    out_img.putpalette(new_palette)
+    out_img.putpalette(new_palette, rawmode='RGB')
 
     if out_label_flag:
         assert labels is not None
