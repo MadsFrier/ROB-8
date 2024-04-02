@@ -80,6 +80,7 @@ def load_npy(npy_filepath):
     return npy
 
 def create_point_clouds(file_path, start_count, finish_count):
+    diff = 130 - start_count
     pcd_list = []
     camera_x_mm = 0.320
     camera_z_mm = 1.000
@@ -87,31 +88,29 @@ def create_point_clouds(file_path, start_count, finish_count):
                                        [0],
                                        [camera_z_mm],
                                        [1]])
-    
+  
     for i in range(start_count, finish_count):
             
         depth_npy = load_npy(file_path+'depth/rs_'+ str(i) + '.npy')
 
+
+       
         pose = extract_numbers_from_file(file_path+'/pose/robot_pose_'+str((i+1))+'.txt')
+        pose_np = np.array(pose[3:])
 
-        
+        pose_rot = o3d.geometry.get_rotation_matrix_from_quaternion(pose_np)
+   
         rot_euler = quaternion_rotation_matrix(pose[3:])
-
-        #print(pose[3:])
 
         translation_vector_base = np.array([[pose[0]],
                                        [pose[1]],
                                        [pose[2]],
                                        [1]])
         
-        #print(translation_vector_base)
-        #print(rot_euler)
+        
         base_transform = np.r_[rot_euler, np.array([[0, 0, 0]]) ]
 
         base_transform= np.c_[base_transform, translation_vector_base]
-
-        #print(f'Base Transform:')
-        #print(base_transform)
 
         camera_transform = np.array([ [1, 0, 0],
                                       [0, -1, 0],
@@ -120,25 +119,21 @@ def create_point_clouds(file_path, start_count, finish_count):
 
         ])
         camera_transform = np.c_[ camera_transform, camera_translation ]  
-        #print(camera_transform)
 
         base_camera = base_transform @ camera_transform
 
         print('Base Camera: ')
         print(base_camera)
 
-
-                        
+    
+       
         depth = o3d.geometry.Image(depth_npy.astype(np.uint16))   
         color = cv.cvtColor(cv.imread(file_path+'rgb/rs_'+str(i)+'.png'), cv.COLOR_RGB2BGR)
+        
         color = o3d.geometry.Image(color)
         # create rgbd
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color, depth, convert_rgb_to_intensity=False, depth_trunc=11.0)
-        # segd = o3d.geometry.RGBDImage.create_from_color_and_depth(seg, depth, convert_rgb_to_intensity=False)
-        
-        # show rgb and depth images
-        #show_rgbg_o3d(rgbd)
-
+   
         # 4. Create point cloud for each image
         
         # create point cloud
@@ -146,7 +141,7 @@ def create_point_clouds(file_path, start_count, finish_count):
 
         # flip the orientation, so it looks upright, not upside-down
 
-        pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+        #pcd.transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
 
         pcd.transform(base_camera)
         
@@ -172,9 +167,9 @@ def load_point_clouds(voxel_clouds_size=0.0):
         pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
         pcds.append(pcd_down)
     return pcds
-start_im = 20
-last_im =23
-pcds_l = create_point_clouds('/home/christian/Github/ROB-8/docker/src/content/spatial_map_data/', start_im, last_im)
+start_im = 5
+last_im = 10
+pcds_l = create_point_clouds('../ROB-8/docker/src/content/spatial_map_data/', start_im, last_im)
 print(pcds_l)
 print(f'PCD List: {len(pcds_l)}')
 o3d.visualization.draw_geometries(pcds_l)
