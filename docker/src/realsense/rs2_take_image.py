@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import time
+import json
 
 stream = False
 
@@ -14,6 +15,28 @@ def load_npy(npy_filepath):
 
 # Create a pipeline
 pipeline = rs.pipeline()
+
+with open("/home/gayath/project/ROB-8/docker/settings of d455.json", "r") as jsonFile: 
+    jsonObj = json.load(jsonFile)
+#changing parameters in the json file
+# add
+    jsonObj["viewer"]["stream-height"] = 840
+    jsonObj["viewer"]["stream-width"] = 480
+    jsonObj["parameters"]["controls-autoexposure-manual"] = 33000
+    jsonObj["parameters"]["controls-depth-gain"] = 16
+    jsonObj["parameters"]["controls-laserpower"] = 300
+
+    newData = json.dumps(jsonObj, indent=4)
+
+# open
+with open("/home/gayath/project/ROB-8/docker/modified settings of d455.json", "w") as jsonFile:
+
+# write
+    jsonFile.write(newData)
+    json_string= newData
+    print("W: ",json_string)
+    #jsonFile.close()
+
 
 # Create a config and configure the pipeline to stream
 #  different resolutions of color and depth streams
@@ -40,6 +63,9 @@ config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
 
 # Start streaming
 profile = pipeline.start(config)
+dev = profile.get_device()
+advnc_mode = rs.rs400_advanced_mode(dev)
+advnc_mode.load_json(json_string)
 
 try:
   for i in range(0, 50):

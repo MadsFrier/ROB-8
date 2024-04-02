@@ -7,7 +7,7 @@ import time
 #jsonObj = json.load(open("/home/gayath/changed settings of d455.json"))
 #json_string= str(jsonObj).replace("'", '\"')\
 
-with open("/home/gayath/changed settings of d455.json", "r") as jsonFile:
+with open("/home/gayath/project/ROB-8/docker/settings of d455.json", "r") as jsonFile:
     jsonObj = json.load(jsonFile)
     
     #json_string= jsonObj
@@ -24,7 +24,7 @@ with open("/home/gayath/changed settings of d455.json", "r") as jsonFile:
     newData = json.dumps(jsonObj, indent=4)
 
 # open
-with open("/home/gayath/modified settings of d455.json", "w") as jsonFile:
+with open("/home/gayath/project/ROB-8/docker/modified settings of d455.json", "w") as jsonFile:
 
     # write
     jsonFile.write(newData)
