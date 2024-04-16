@@ -1,0 +1,8 @@
+source /ros_entrypoint.sh && \
+    cd src/rtabmap/build && \
+    ~/cmake -DWITH_OPENGV=ON .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../.. && \
+    rm -rf rtabmap && \
+    ldconfig

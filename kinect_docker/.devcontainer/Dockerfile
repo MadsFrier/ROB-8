@@ -2,6 +2,7 @@ FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# install packages
 RUN apt-get update && apt-get install -y \
     # python3.10 \
     python-pip \
@@ -11,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     ffmpeg \
+    v4l-utils \
     python-setuptools \
     lsb-release \
     libglvnd0 \
@@ -45,6 +47,7 @@ RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearm
     && \
     apt-get update
 
+# installing azure kinect sdk
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN apt-add-repository https://packages.microsoft.com/ubuntu/18.04/prod
 
@@ -59,6 +62,111 @@ RUN apt-get install -y k4a-tools
 RUN apt-get install -y libk4a1.4-dev
 
 COPY 99-k4a.rules /etc/udev/rules.d/99-k4a.rules
+
+#install ros melotic
+
+# setup keys
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# setup sources.list
+RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros1-latest.list
+
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+ENV ROS_DISTRO melodic
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-desktop-full=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-ros-core=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# setup entrypoint
+COPY ./ros_entrypoint.sh /
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
+    && rm -rf /var/lib/apt/lists/*
+
+# bootstrap rosdep
+RUN rosdep init && \
+  rosdep update --rosdistro $ROS_DISTRO
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-ros-base=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-perception=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# install rtabmap
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y git software-properties-common ros-melodic-rtabmap-ros && \
+    apt-get remove -y ros-melodic-rtabmap* && \
+    apt-get clean && rm -rf /var/lib/apt/lists/
+
+WORKDIR /root/
+
+# GTSAM
+RUN add-apt-repository ppa:borglab/gtsam-release-4.0 -y
+RUN apt-get update && apt install libgtsam-dev libgtsam-unstable-dev -y && \
+    apt-get clean && rm -rf /var/lib/apt/lists/
+
+# MRPT # build failed: https://github.com/introlab/rtabmap/actions/runs/7259315306/job/19776230419
+#RUN add-apt-repository ppa:joseluisblancoc/mrpt-stable -y
+#RUN apt-get update && apt install libmrpt-poses-dev -y && \
+#    apt-get clean && rm -rf /var/lib/apt/lists/
+
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
+RUN echo "I am building for $TARGETPLATFORM"
+
+# cmake >=3.14 required
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then apt update && apt install -y wget && apt-get clean && rm -rf /var/lib/apt/lists/ && \
+    wget -nv https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-aarch64.tar.gz   && \
+    tar -xzf cmake-3.20.0-linux-aarch64.tar.gz  && \
+    rm cmake-3.20.0-linux-aarch64.tar.gz  &&\
+    ln -s ~/cmake-3.20.0-linux-aarch64/bin/cmake ~/cmake; fi
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then apt update && apt install -y wget && apt-get clean && rm -rf /var/lib/apt/lists/ && \
+    wget -nv https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz  && \
+    tar -xzf cmake-3.20.0-linux-x86_64.tar.gz  && \
+    rm cmake-3.20.0-linux-x86_64.tar.gz  &&\
+    ln -s ~/cmake-3.20.0-linux-x86_64/bin/cmake ~/cmake; fi
+    
+#commit Aug 6 2020
+RUN apt-get update && apt install wget && apt-get clean && rm -rf /var/lib/apt/lists/
+RUN git clone https://github.com/laurentkneip/opengv.git && \
+    cd opengv && \
+    git checkout 91f4b19c73450833a40e463ad3648aae80b3a7f3 && \
+    wget https://gist.githubusercontent.com/matlabbe/a412cf7c4627253874f81a00745a7fbb/raw/accc3acf465d1ffd0304a46b17741f62d4d354ef/opengv_disable_march_native.patch && \
+    git apply opengv_disable_march_native.patch && \
+    mkdir build && \
+    cd build && \
+    ~/cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd && \
+    rm -r opengv
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 ENV DEBIAN_FRONTEND=dialog
 
