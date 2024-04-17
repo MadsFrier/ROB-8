@@ -2,9 +2,10 @@ FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+WORKDIR /workspaces/ROB-8/kinect_docker/
+
 # install packages
 RUN apt-get update && apt-get install -y \
-    # python3.10 \
     python-pip \
     wget \
     gedit \
@@ -32,14 +33,15 @@ RUN apt-get update && apt-get install -y \
     && apt clean -y \
     && rm -rf /var/lib/apt/lists/*
 
+# copy
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY src/ src/
 ENV PYTHONPATH /app
 
+# install nvidia container essentials
 ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute,display
-
 RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
     && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
@@ -47,7 +49,7 @@ RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearm
     && \
     apt-get update
 
-# installing azure kinect sdk
+# ------ Azure Kinect ------ #
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN apt-add-repository https://packages.microsoft.com/ubuntu/18.04/prod
 
@@ -62,6 +64,20 @@ RUN apt-get install -y k4a-tools
 RUN apt-get install -y libk4a1.4-dev
 
 COPY 99-k4a.rules /etc/udev/rules.d/99-k4a.rules
+
+# ------------------------- #
+
+
+
+# ---------- ROS ---------- #
+
+# ------------------------- #
+
+
+
+# -------- RTABMAP -------- #
+
+# ------------------------- #
 
 ENV DEBIAN_FRONTEND=dialog
 
