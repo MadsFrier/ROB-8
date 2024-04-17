@@ -37,7 +37,10 @@
             "ms-python.python",
             "yzhang.markdown-all-in-one",
             "zachflower.uncrustify",
-            "vsliveshare.vsliveshare"
+            "vsliveshare.vsliveshare", 
+            "ms-vscode.cpptools-themes", 
+            "ms-vscode.cmake-tools", 
+            "vscjava.vscode-java-pack"
         ]
     }
 }
