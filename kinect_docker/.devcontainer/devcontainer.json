@@ -14,7 +14,10 @@
         "--runtime=nvidia",
         "--gpus=all",
         "--pid=host",
-        "--privileged"
+        "--privileged",
+        "--cap-add=ALL",
+        "--device=/dev/video0"
+        //"--device=/dev/video3:/dev/video3"
         // "--u=root"
         // "device=0"
         // uncomment to use intel iGPU

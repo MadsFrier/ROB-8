@@ -6,6 +6,7 @@ WORKDIR /workspaces/ROB-8/kinect_docker/
 
 # install packages
 RUN apt-get update && apt-get install -y \
+    sudo \
     python-pip \
     wget \
     gedit \
@@ -195,8 +196,10 @@ RUN apt update && apt upgrade -y
 
 ENV DEBIAN_FRONTEND=dialog
 
-RUN useradd -ms /bin/bash kinect
+#RUN useradd -ms /bin/bash kinect
+
+RUN useradd -m kinect && echo "kinect:kinect" | chpasswd && adduser kinect sudo
 
 USER kinect
 
-SHELL ["/bin/bash", "-c", "source /opt/ros/melodic/setup.bash"]
+ENTRYPOINT ["/bin/bash", "-c", "/opt/ros/melotic/setup.bash"]
