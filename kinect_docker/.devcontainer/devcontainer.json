@@ -5,19 +5,20 @@
     
     "runArgs": [
         "--network=host",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt=seccomp:unconfined",
-        "--security-opt=apparmor:unconfined",
+        "--cap-add=ALL",
+        //"--security-opt=seccomp:unconfined",
+        //"--security-opt=apparmor:unconfined",
         "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
         "--volume=/mnt/wslg:/mnt/wslg",
+        "--volume=/dev/video0:/dev/video0",
+        "--volume=/dev/video1:/dev/video1",
+        "--volume=/dev/video2:/dev/video2",
+        "--volume=/dev/video3:/dev/video3",
         "--ipc=host",
         "--runtime=nvidia",
         "--gpus=all",
         "--pid=host",
-        "--privileged",
-        "--cap-add=ALL",
-        "--device=/dev/video0"
-        //"--device=/dev/video3:/dev/video3"
+        "--privileged"
         // "--u=root"
         // "device=0"
         // uncomment to use intel iGPU
