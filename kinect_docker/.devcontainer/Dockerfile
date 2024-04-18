@@ -198,8 +198,6 @@ RUN apt update && apt upgrade -y
 
 ENV DEBIAN_FRONTEND=dialog
 
-RUN apt-get install cheese -y
-
 RUN useradd -ms /bin/bash kinect
 #RUN useradd -m kinect && echo "kinect:kinect" | chpasswd && adduser kinect sudo
 #RUN usermod -a -G video kinect
