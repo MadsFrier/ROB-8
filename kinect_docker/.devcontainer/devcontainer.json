@@ -6,8 +6,8 @@
     "runArgs": [
         "--network=host",
         "--cap-add=ALL",
-        //"--security-opt=seccomp:unconfined",
-        //"--security-opt=apparmor:unconfined",
+        "--security-opt=seccomp:unconfined",
+        "--security-opt=apparmor:unconfined",
         "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
         "--volume=/mnt/wslg:/mnt/wslg",
         "--volume=/dev/video0:/dev/video0",
