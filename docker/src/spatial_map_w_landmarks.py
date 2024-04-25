@@ -25,6 +25,20 @@ def load_npy(npy_filepath):
         npy = np.load(f)
     return npy
 
+def load_poses(file_path):
+    x, y, z, q0, q1, q2, q3 = [], [], [], [], [], [], []
+    with open(file_path, 'r') as f:
+        for line in f:
+            numbers = [float(i) for i in line.split()]
+            x.append(numbers[0])
+            y.append(numbers[1])
+            z.append(numbers[2])
+            q0.append(numbers[3])
+            q1.append(numbers[4])
+            q2.append(numbers[5])
+            q3.append(numbers[6])
+    return x, y, z, q0, q1, q2, q3
+
 def show_rgbg_o3d(rgbd_image):
     plt.subplot(1, 2, 1)
     plt.title('RGB')
@@ -91,13 +105,47 @@ def full_registration(pcds, max_correspondence_distance_coarse,
 def flatten(lst):
     return [x for xs in lst for x in xs]
 
+def pose_to_mat(x, y, z, q0, q1, q2, q3):
+    """
+    Covert a quaternion into a full three-dimensional rotation matrix.
+ 
+    Input
+    :param Q: A 4 element array representing the quaternion (q0,q1,q2,q3) 
+ 
+    Output
+    :return: A 3x3 element matrix representing the full 3D rotation matrix. 
+             This rotation matrix converts a point in the local reference 
+             frame to a point in the global reference frame.
+    """
+
+    # First row of the rotation matrix
+    r00 = 2 * (q0 * q0 + q1 * q1) - 1
+    r01 = 2 * (q1 * q2 - q0 * q3)
+    r02 = 2 * (q1 * q3 + q0 * q2)
+     
+    # Second row of the rotation matrix
+    r10 = 2 * (q1 * q2 + q0 * q3)
+    r11 = 2 * (q0 * q0 + q2 * q2) - 1
+    r12 = 2 * (q2 * q3 - q0 * q1)
+     
+    # Third row of the rotation matrix
+    r20 = 2 * (q1 * q3 - q0 * q2)
+    r21 = 2 * (q2 * q3 + q0 * q1)
+    r22 = 2 * (q0 * q0 + q3 * q3) - 1
+    
+    # 3x3 rotation matrix
+    trans_matrix = np.array([[r00, r01, r02, x],
+                           [r10, r11, r12, y],
+                           [r20, r21, r22, z],
+                           [0, 0, 0, 1]])
+    return trans_matrix
 if __name__ == "__main__":
 
     # Directory of data
     data_directory = "/workspaces/ROB-8/docker/src/content/" # This is for users inside of docker only
     
     # choose dataset
-    dataset = 'rs_data/'
+    dataset = 'group_data/'
     data_directory = data_directory + dataset
 
     # specific folders for data
@@ -110,20 +158,20 @@ if __name__ == "__main__":
     sem_folder = 'semantic/'
 
     # file name of the data
-    file_name = "rs_"
+    file_name = "group_"
     
     # choose file format
     rgb_format = '.jpg' # has to be jpg, otherwise open3d will not create the pcd
-    depth_format = '.npy'
-    
+    depth_format = '.png'
+        
     # set voxel grid size
-    voxel_size = 0.1
+    voxel_size = 0.001
     
     # allow for lseg to run
     allow_lseg = False
     
     # Choose to create rgb or seg pcd or both
-    pcds = [seg_pcd_folder, rgb_pcd_folder]
+    pcds = [rgb_pcd_folder] # [seg_pcd_folder, rgb_pcd_folder]
     
     # choose prompt
     prompt = 'other, floor, ceiling, table, cabinet, lamp, chair, curtain, window'
@@ -177,7 +225,7 @@ if __name__ == "__main__":
             
     ### !!! FOR TESTING ONLY !!! ###
     
-    lst_checked = lst_checked[0:4]
+    lst_checked = lst_checked[0:3]
         
     ################################
             
@@ -267,39 +315,17 @@ if __name__ == "__main__":
         pcds_down = load_point_clouds(lst_checked[0], lst_checked[0]+len(lst_checked), data_directory, str(i), file_name, voxel_size)
         #o3d.visualization.draw_geometries(pcds_down)
         
-        print("Full registration ...")
-        max_correspondence_distance_coarse = voxel_size * 15
-        max_correspondence_distance_fine = voxel_size * 1.5
-        with o3d.utility.VerbosityContextManager(
-                o3d.utility.VerbosityLevel.Debug) as cm:
-            pose_graph = full_registration(pcds_down,
-                                        max_correspondence_distance_coarse,
-                                        max_correspondence_distance_fine)
-
-
-        print("Optimizing PoseGraph ...")
-        option = o3d.pipelines.registration.GlobalOptimizationOption(
-            max_correspondence_distance=max_correspondence_distance_fine,
-            edge_prune_threshold=0.25,
-            reference_node=0)
-        with o3d.utility.VerbosityContextManager(
-                o3d.utility.VerbosityLevel.Debug) as cm:
-            o3d.pipelines.registration.global_optimization(
-                pose_graph,
-                o3d.pipelines.registration.GlobalOptimizationLevenbergMarquardt(),
-                o3d.pipelines.registration.GlobalOptimizationConvergenceCriteria(),
-                option)
-            
-        for point_id in range(len(pcds_down)):
-            print(pose_graph.nodes[point_id].pose)
-            pcds_down[point_id].transform(pose_graph.nodes[point_id].pose)
-        
         print('Visualising combined point clouds...')
 
         pcds = load_point_clouds(lst_checked[0], lst_checked[0]+len(lst_checked), data_directory, str(i), file_name, voxel_size)
         pcd_combined = o3d.geometry.PointCloud()
+        
+        x, y, z, q1, q2, q3, q4 = load_poses(data_directory + pose_folder + file_name + '.txt')
         for point_id in range(len(pcds)):
-            pcds[point_id].transform(pose_graph.nodes[point_id].pose)
+            trans_mat = pose_to_mat(x[point_id], y[point_id], z[point_id], q1[point_id], q2[point_id], q3[point_id], q4[point_id])
+            print(trans_mat)
+            pcds[point_id].transform(trans_mat)
+            pcds[point_id].transform([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
             pcd_combined += pcds[point_id]
         pcd_combined_down = pcd_combined.voxel_down_sample(voxel_size=voxel_size)
         o3d.io.write_point_cloud(data_directory + map_folder + 'map_' + str(i)[:-5] + '.pcd', pcd_combined_down, format='auto', write_ascii=False, compressed=False, print_progress=False)

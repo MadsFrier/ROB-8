@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-# path_dir = "/workspaces/ROB-8/docker/src/content/rs_data/" FOR INSIDE DOCKER
-path_dir = "/home/mads/github/ROB-8/docker/src/content/rs_data/"
+path_dir = "/workspaces/ROB-8/docker/src/content/group_data/" # FOR INSIDE DOCKER
+#path_dir = "/home/mads/github/ROB-8/docker/src/content/group_data/"
 sem_folder = 'semantic/'
 rgb_folder = 'rgb/'
 depth_folder = 'depth/'
-file_name = "rs_0"
+file_name = "group_19"
 
 def load_npy(npy_filepath):
     with open(npy_filepath, 'rb') as f:
@@ -16,7 +16,8 @@ def load_npy(npy_filepath):
 
 #semantic_img = np.load(path_dir + sem_folder + file_name + '.npy')
 rgb_img = plt.imread(path_dir + rgb_folder + file_name + '.jpg')
-depth_img = load_npy(path_dir + depth_folder + file_name + '.npy')
+#depth_img = load_npy(path_dir + depth_folder + file_name + '.npy')
+depth_img = plt.imread(path_dir + depth_folder + file_name + '.png')
 
 
 plt.subplot(1, 2, 1)
