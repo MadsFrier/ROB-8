@@ -21,10 +21,6 @@ images = data.fetchall()
 for image in images:
         
     image_blob = image[0]
-    print("----------------")
-    print(type(image_blob))
-    print(image_blob[0:10])
-    print(len(image_blob))
             
     # Create a PIL Image object from the image blob
     image = np.array(Image.open(io.BytesIO(image_blob)))

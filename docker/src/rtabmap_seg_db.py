@@ -14,15 +14,6 @@ from demo.lseg_demo import load_lseg, run_lseg, torch_clear_cache
 
 # functions
 
-def load_point_clouds(start_file, num_files, data_directory, folder, file_name, voxel_size=0.0):
-    pcds = []
-    for i in range(start_file, num_files):
-        pcd = o3d.io.read_point_cloud(data_directory + folder + file_name + str(i) + '.pcd')
-        pcd.estimate_normals()
-        pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
-        pcds.append(pcd_down)
-    return pcds
-
 def flatten(lst):
     return [x for xs in lst for x in xs]
 
@@ -39,6 +30,7 @@ if __name__ == "__main__":
     seg_pcd_folder = 'seg_pcd/'
     rgb_folder = 'rgb/'
     seg_folder = 'seg/'
+    db_folder = 'db/'
 
     # Choose database
     db_name = "test.db"
@@ -99,7 +91,7 @@ if __name__ == "__main__":
         exit()
     
     # sql
-    conn = sql.connect(data_directory + db_name[:-3] + '_seg.db')
+    conn = sql.connect(data_directory + db_folder + db_name[:-3] + '_seg.db')
 
     data = conn.execute("SELECT image FROM Data")
     images = data.fetchall()
@@ -159,4 +151,4 @@ if __name__ == "__main__":
             plt.imshow(image)
             plt.show()
         
-        conn.close()
+    conn.close()
