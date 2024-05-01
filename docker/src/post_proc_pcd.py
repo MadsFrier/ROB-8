@@ -74,7 +74,7 @@ colours = [
 [244,   164,    96]         # Sandy Brown       : 25
 ]
 
-pcd_path = "/workspaces/ROB-8/docker/src/content/meeti_db/seg_pcd/seg_map.pcd"
+pcd_path = "/workspaces/ROB-8/docker/src/content/meetwb_db/seg_pcd/seg_map.pcd"
 pcd = o3d.io.read_point_cloud(pcd_path)
 
 pcd_points, pcd_colours = np.asarray(pcd.points), (np.asarray(pcd.colors) * 255).astype(np.uint8)
@@ -143,11 +143,11 @@ flt_pcd.points = o3d.utility.Vector3dVector(flt_pcd_points)
 flt_pcd.colors = o3d.utility.Vector3dVector(flt_pcd_colours/255.0)
 
 # save landmarks as json
-with open('/workspaces/ROB-8/docker/src/content/meeti_db/landmarks/lms.json', 'w') as file:
+with open('/workspaces/ROB-8/docker/src/content/meetwb_db/landmarks/lms.json', 'w') as file:
     json.dump(landmarks_dict, file)
 
 #o3d.visualization.draw_geometries([pcd])
 o3d.visualization.draw_geometries([flt_pcd])
 
 #save pcd
-o3d.io.write_point_cloud('/workspaces/ROB-8/docker/src/content/meeti_db/seg_pcd/seg_post_map.pcd', flt_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+o3d.io.write_point_cloud('/workspaces/ROB-8/docker/src/content/meetwb_db/seg_pcd/seg_post_map.pcd', flt_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
