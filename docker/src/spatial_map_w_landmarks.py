@@ -39,7 +39,7 @@ def load_poses(file_path):
             q3.append(numbers[6])
     return x, y, z, q0, q1, q2, q3
 
-def show_rgbg_o3d(rgbd_image):
+def show_rgbd_o3d(rgbd_image):
     plt.subplot(1, 2, 1)
     plt.title('RGB')
     plt.imshow(rgbd_image.color)
@@ -284,7 +284,7 @@ if __name__ == "__main__":
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(bgr_o3d_img, depth_o3d_img, convert_rgb_to_intensity=False, depth_trunc=11.0)
         
         # show rgb and depth images
-        # show_rgbg_o3d(rgbd)
+        # show_rgbd_o3d(rgbd)
         # show_rgbd_o3d(segd)
         
         # create point cloud

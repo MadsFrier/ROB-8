@@ -1,8 +1,0 @@
-cd src/content/
-gdown 1wjuiVcO92Rqer5gLk-X7hINfe4PCMQmu
-unzip -o 5LpN3gDmAk7_1.zip | tqdm --desc extracted --unit files --unit_scale --total `unzip -l 5LpN3gDmAk7_1.zip | tail -n 1 | xargs echo -n | cut -d' ' -f2` > /dev/null
-
-cd /src/content/vlmaps/lseg
-mkdir checkpoints
-cd /checkpoints
-gdown 1ayk6NXURI_vIPlym16f_RG3ffxBWHxvb
