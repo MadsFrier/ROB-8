@@ -12,3 +12,5 @@
 /docker/src/content/meetwb_db/seg_pcd
 /docker/src/content/meeti_db/rgb_pcd
 /docker/src/content/meeti_db/seg_pcd
+/docker/src/content/meetwb_db/dbs
+/docker/src/content/meeti_db/dbs
