@@ -23,24 +23,24 @@ if __name__ == "__main__":
     data_directory = "/workspaces/ROB-8/docker/src/content/" # This is for users inside of docker only
     
     # choose database
-    dataset = 'meeti_db/'
+    dataset = 'meeti_s_db/'
     data_directory = data_directory + dataset
     
     rgb_pcd_folder = 'rgb_pcd/'
     seg_pcd_folder = 'seg_pcd/'
     rgb_folder = 'rgb/'
     seg_folder = 'seg/'
-    db_folder = 'db/'
+    db_folder = 'dbs/'
 
 
     # Choose database
-    db_name = "meeti.db"
+    db_name = "meetis.db"
     
     #dublicate db to prepare for updates to the db
-    shutil.copy(data_directory + db_name, data_directory + db_name[:-3] + '_seg.db')
+    shutil.copy(data_directory + db_folder + db_name, data_directory + db_folder + db_name[:-3] + '_seg.db')
     
     # choose lseg png file name
-    file_name = "meeti_"
+    file_name = "meetis_"
     
     # allow for lseg to run
     allow_lseg = True
@@ -49,8 +49,9 @@ if __name__ == "__main__":
     pcds = [rgb_pcd_folder] # [rgb_pcd_folder, seg_pcd_folder]
     
     # choose prompt
-    prompt = 'other, floor, ceiling, window, table, chair, plant, package, wall, door, trash_can, curtain, ceiling_lamp, cabinet, painting'
-    
+    prompt = 'other, chair, plant, package'
+    #prompt = 'other, floor, ceiling, window, table, chair, plant, package, wall, door, trash_can, curtain, ceiling_lamp, cabinet, painting'
+
     # colors associated with prompt
     colors = [
     [0,     0,      0],         # Black             : 1

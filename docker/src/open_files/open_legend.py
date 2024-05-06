@@ -53,4 +53,4 @@ for color, label in zip(colors, prompt.split(', ')):
 # Showing only the legend
 ax.legend()
 
-plt.savefig(data_directory + 'legend.png')
+plt.savefig(data_directory + 'legend.pdf')

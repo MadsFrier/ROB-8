@@ -17,7 +17,7 @@ def remove_sparse_points(pcd_points, pcd_colours, min_neighbor_points, radius):
     flt_pcd_points = pcd_points[mask]
     flt_pcd_colours = pcd_colours[mask]
     return flt_pcd_points, flt_pcd_colours
-def cluster_and_find_centre(pcd_points):
+def cluster_and_find_centre(pcd_points, pcd_colours, colours, cluster_points, cluster_colours):
     clustering = DBSCAN(eps=0.5, min_samples=2).fit(pcd_points)
     labels = clustering.labels_
     unique_labels = np.unique(labels)
@@ -26,10 +26,15 @@ def cluster_and_find_centre(pcd_points):
     for i in unique_labels:
         indices = np.where(labels == i)[0]
         clustered_pcd_points = pcd_points[indices]
+        clustered_pcd_colours = pcd_colours[indices]
+        for y in range(len(clustered_pcd_colours)):
+            clustered_pcd_colours[y] = colours[i]
         landmark = np.median(clustered_pcd_points, axis=0)
         landmarks.append(list(landmark))
+        cluster_points = np.vstack((cluster_points, clustered_pcd_points))
+        cluster_colours = np.vstack((cluster_colours, clustered_pcd_colours))
     
-    return landmarks
+    return landmarks, cluster_points, cluster_colours
 
 def find_closest_colour(pcd_colours, colours):
     print('Fitting colours to predefined colours...')
@@ -108,17 +113,22 @@ for chosen_index in chosen_indices:
 flt_pcd_points = np.empty([1,3])
 flt_pcd_colours = np.empty([1,3])
 
+cluster_pcd_points = np.empty([1,3])
+cluster_pcd_colours = np.empty([1,3])
+
 landmarks_dict = {}
 landmarks = []
 
 for i, chosen_colour in enumerate(chosen_colours):
+
     chosen_prompt = labels[chosen_indices[i]]
 
     indices = np.where(np.all(proc_pcd_colours == chosen_colour, axis=1))[0]
     
     flt_points, flt_colours = remove_sparse_points(proc_pcd_points[indices], proc_pcd_colours[indices], 50, 0.25) # [m]
+    
     # cluster
-    res = cluster_and_find_centre(flt_points)
+    res, cluster_pcd_points, cluster_pcd_colours = cluster_and_find_centre(flt_points, flt_colours, colours, cluster_pcd_points, cluster_pcd_colours)
     landmarks.append(res)
     
     for y, x in enumerate(res):
@@ -126,16 +136,33 @@ for i, chosen_colour in enumerate(chosen_colours):
     
     flt_pcd_points = np.vstack((flt_pcd_points, flt_points))
     flt_pcd_colours = np.vstack((flt_pcd_colours, flt_colours))
+    
+# convert np array to pcd 
 
+#flt_pcd_points = flt_pcd_points[1:]
+#flt_pcd_colours = flt_pcd_colours[1:]
+
+#unflt_pcd = o3d.geometry.PointCloud()
+#flt_pcd = o3d.geometry.PointCloud()
+
+#flt_pcd.points = o3d.utility.Vector3dVector(flt_pcd_points)
+#flt_pcd.colors = o3d.utility.Vector3dVector(flt_pcd_colours/255.0)
+#unflt_pcd.points = o3d.utility.Vector3dVector(proc_pcd_points)
+#unflt_pcd.colors = o3d.utility.Vector3dVector(proc_pcd_colours/255.0)
+
+#save pcd
+#o3d.io.write_point_cloud('/workspaces/ROB-8/docker/src/content/meeti_db/seg_pcd/seg_sparse_map.pcd', flt_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+#o3d.io.write_point_cloud('/workspaces/ROB-8/docker/src/content/meeti_db/seg_pcd/unflt_seg_sparse_map.pcd', unflt_pcd, format='auto', write_ascii=False, compressed=False, print_progress=False)
+#exit()
 #for lm in landmarks:
 #    for i in lm:
 #        i = [i[0], i[1], i[2]]
 #        flt_pcd_points = np.vstack((flt_pcd_points, i))
 #        flt_pcd_colours = np.vstack((flt_pcd_colours, [0, 0, 0]))
 
-flt_pcd_points = flt_pcd_points[1:]
-flt_pcd_colours = flt_pcd_colours[1:]
-
+flt_pcd_points = cluster_pcd_points[:-1] # flt_pcd_points[1:]
+flt_pcd_colours = cluster_pcd_colours[:-1] # flt_pcd_colours[1:]
+print(len(flt_pcd_points), len(flt_pcd_colours))
 # convert np array to pcd 
 flt_pcd = o3d.geometry.PointCloud()
 

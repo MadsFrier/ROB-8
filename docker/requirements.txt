@@ -3,7 +3,7 @@ git+https://github.com/openai/CLIP.git
 torch-encoding
 ipython
 pytorch-lightning
-opencv-python
+opencv-python-headless
 imageio[ffmpeg]
 ftfy 
 regex 
