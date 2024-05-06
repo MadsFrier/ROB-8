@@ -2,6 +2,7 @@ import open3d as o3d
 import numpy as np
 from sklearn.cluster import DBSCAN
 import json
+import random
 
 def remove_sparse_points(pcd_points, pcd_colours, min_neighbor_points, radius):
     print("Removing sparse points...")
@@ -27,8 +28,8 @@ def cluster_and_find_centre(pcd_points, pcd_colours, colours, cluster_points, cl
         indices = np.where(labels == i)[0]
         clustered_pcd_points = pcd_points[indices]
         clustered_pcd_colours = pcd_colours[indices]
-        for y in range(len(clustered_pcd_colours)):
-            clustered_pcd_colours[y] = colours[i]
+        #for y in range(len(clustered_pcd_colours)):
+        #    clustered_pcd_colours[y] = colours[i]
         landmark = np.median(clustered_pcd_points, axis=0)
         landmarks.append(list(landmark))
         cluster_points = np.vstack((cluster_points, clustered_pcd_points))
@@ -125,6 +126,8 @@ for i, chosen_colour in enumerate(chosen_colours):
 
     indices = np.where(np.all(proc_pcd_colours == chosen_colour, axis=1))[0]
     
+    #flt_points = proc_pcd_points[indices]
+    #flt_colours = proc_pcd_colours[indices]
     flt_points, flt_colours = remove_sparse_points(proc_pcd_points[indices], proc_pcd_colours[indices], 50, 0.25) # [m]
     
     # cluster
@@ -160,9 +163,9 @@ for i, chosen_colour in enumerate(chosen_colours):
 #        flt_pcd_points = np.vstack((flt_pcd_points, i))
 #        flt_pcd_colours = np.vstack((flt_pcd_colours, [0, 0, 0]))
 
-flt_pcd_points = cluster_pcd_points[:-1] # flt_pcd_points[1:]
-flt_pcd_colours = cluster_pcd_colours[:-1] # flt_pcd_colours[1:]
-print(len(flt_pcd_points), len(flt_pcd_colours))
+flt_pcd_points = cluster_pcd_points[1:] # flt_pcd_points[1:]
+flt_pcd_colours = cluster_pcd_colours[1:] # flt_pcd_colours[1:]
+
 # convert np array to pcd 
 flt_pcd = o3d.geometry.PointCloud()
 

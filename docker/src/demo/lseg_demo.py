@@ -93,12 +93,10 @@ def run_lseg(image_np, model, labels, palette, show):
             img = img * 0.5 + 0.5
             img = Image.fromarray(np.uint8(255*img)).convert("RGBA")
             seg = mask.convert("RGBA")
-            plt.axis('off')
-            plt.imshow(img)
-            plt.figure()
+            f, axarr = plt.subplots(1,2)
+            axarr[0].imshow(img)
             plt.legend(handles=patches, loc='upper right', bbox_to_anchor=(1.5, 1), prop={'size': 20})
-            plt.axis('off')
-            plt.imshow(seg)
+            axarr[1].imshow(seg)
             plt.show()
     
     return predict, mask.convert('RGB'), patches
@@ -196,11 +194,13 @@ if __name__ == "__main__":
     data_dir = "/workspaces/ROB-8/docker/src/content/demo_images/" # USE THIS FOR DEMO
 
     # choose image to load in
-    img_name = "dog.jpg" # USE THIS FOR DEMO
+    img_name = "test_plant.jpg" # USE THIS FOR DEMO
 
     # choose prompt
     prompt = 'tree, animal, sky, grass, other' # USE THIS FOR DEMO
-    
+    prompt = 'other, chair, lamp, door, wall, carpet, floor, shelf, table'
+    prompt = 'other, package, door, brick, floor, carpet'
+    prompt = 'other, plant, table, wall'
     # choose whether to show the image
     show = True
     
