@@ -1,0 +1,2 @@
+
+User Prompt: can yu pleaso move to chair_1 and then inspect package_3 Model Response: Certainly! Moving to chair_1 and then inspecting package_3. I am calling the function(s): robot.move_to('chair_1'), robot.inspect('package_3')

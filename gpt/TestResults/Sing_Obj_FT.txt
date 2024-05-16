@@ -1,0 +1,3 @@
+
+User Prompt: is it possible for you to move to can_0 Model Response: Absolutely! I'll move to can_0.
+User Prompt: can you inspect can_1 please Model Response: Inspecting can_1. I am calling the function(s): robot.inspect('can_1')

@@ -1,0 +1,20 @@
+User Prompt: can you please move to car Model Response: Moving to car. I am calling the function(s): robot.move_to('car')
+User Prompt: can you please move to car_0 Model Response: Moving to car_0. I am calling the function(s): robot.move_to('car_0')
+User Prompt: is it possible to move to bottle_0 Model Response: Moving to bottle_0. I am calling the function(s): robot.move_to('bottle_0')
+User Prompt: could you move to mouse_1 Model Response: Moving to mouse_1. I am calling the function(s): robot.move_to('mouse_1')
+User Prompt: could you move to pack_1 Model Response: Moving to pack_1. I am calling the function(s): robot.move_to('pack_1')
+User Prompt: could you move to tree_1 Model Response: Moving to tree_1. I am calling the function(s): robot.move_to('tree_1')
+User Prompt: can you inspect chain_1 pleae Model Response: Inspecting chain_1. I am calling the function(s): robot.inspect('chain_1')
+User Prompt: move to can_1 Model Response: Moving to can_1. I am calling the function(s): robot.move_to('can_1')
+User Prompt: move to bookshelf_0 Model Response: Moving to bookshelf_0. I am calling the function(s): robot.move_to('bookshelf_0')
+User Prompt: can you go to sofa_1 Model Response: On my way to sofa_1. I am calling the function(s): robot.move_to('sofa_1')
+User Prompt: is it possible for you to move to can_0 Model Response: Absolutely! I'll move to can_0.
+User Prompt: can you inspect can_1 please Model Response: Inspecting can_1. I am calling the function(s): robot.inspect('can_1')
+User Prompt: could you please go to the sofa Model Response: I'm sorry. I cannot interact with 'sofa'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: can you excavate sofa_1 Model Response: I'm sorry, I cannot interact with 'sofa_1'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: move to chair Model Response: I'm sorry, I cannot interact with 'chair'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: could you move to stool_2 Model Response: I'm sorry. I cannot interact with 'stool_2'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: move to cup_2 Model Response: I'm sorry, I cannot interact with 'cup_2'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: can you please move to car_6 Model Response: I'm sorry. I cannot interact with 'car_6'. The only cars I can interact with are: car_0, car_1, car_2.
+User Prompt: move to dishwasher_0 Model Response: I'm sorry, I cannot interact with 'dishwasher_0'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.
+User Prompt: could you move to mouse_5 Model Response: I'm sorry. I cannot interact with 'mouse_5'. The only items I can interact with are: package_0, package_1, package_2, package_3, chair_0, chair_1, chair_2, plant_0, plant_1.

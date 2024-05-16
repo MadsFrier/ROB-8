@@ -1,0 +1,2 @@
+Robot Pose:
+X:0 Y:0

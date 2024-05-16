@@ -1,0 +1,6 @@
+
+User Prompt: move to chair_1 Assistant Response: I'm sorry, but "chair_1" is not interactable. The only interactable objects are: plant 0, plant 1, chair 0, chair 1, chair 2, package 0, package 1, package 2, package 3.
+User Prompt: move to chair 1 Assistant Response: Yes I can move to chair_1. I am calling the function(s): robot.move_to('chair_1')
+User Prompt: move to chair_1 please Assistant Response: I'm sorry, but the specified object is not interactable. Only the following objects are available: plant 0, plant 1, chair 0, chair 1, chair 2, package 0, package 1, package 2, package 3.
+User Prompt: can you move to chair_0 Assistant Response: Yes I can move to chair_0. I am calling the function(s): robot.move_to('chair_0')
+User Prompt: what is the pose of the robot? Assistant Response: I'm sorry, I can only interact with the following objects: plant_0, plant_1, chair_0, chair_1, chair_2, package_0, package_1, package_2, package_3. The available tasks are inspect, move to, and deliver. I cannot provide information about the pose of the robot.
