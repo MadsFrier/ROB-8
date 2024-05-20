@@ -21,6 +21,21 @@ def euler_to_quaternion(angle):
 
 ##################################################
 
+def get_robot_pose():
+    with open('gpt/ChatGPT/robot_pose.json', 'r') as file:
+        robot_pose = json.load(file)
+        x, y, yaw = robot_pose["robot_pose"]
+    
+    return [x, y, yaw]
+
+def update_robot_pose(x, y, yaw):
+    with open('gpt/ChatGPT/robot_pose.json', 'r') as file:
+        robot_pose = json.load(file)
+        robot_pose["robot_pose"] = [x, y, yaw]
+    
+    with open('gpt/ChatGPT/robot_pose.json', 'w') as file:
+        json.dump(robot_pose, file, indent=4)
+
 def move_to(landmark, rob_pos):
 
     if landmark_dict.get(landmark) is not None:
@@ -79,15 +94,15 @@ def move_between(landmark1, landmark2, rob_pos):
     if landmark_dict.get(landmark1) is None and landmark_dict.get(landmark2) is None:
         print(f"Landmark: {landmark1} and Landmark: {landmark2} not found.")
         return False
-    
+
     elif landmark_dict.get(landmark1) is None:
         print(f"Landmark: {landmark1} not found.")
         return False
-    
+
     elif landmark_dict.get(landmark2) is None:
         print(f"Landmark: {landmark2} not found.")
         return False
-    
+
     else:
         x1, y1 = landmark_dict[landmark1][0], landmark_dict[landmark1][1]
         x2, y2 = landmark_dict[landmark2][0], landmark_dict[landmark2][1]
@@ -97,8 +112,9 @@ def move_between(landmark1, landmark2, rob_pos):
 
         angle = get_angle([mid_x, mid_y], rob_pos)
         quaternion = euler_to_quaternion(angle)
+        #print('angle:\n', angle,)
 
-        print(f"Moving between: {landmark2} at X:{x2}  Y:{y2} and Landmark: {landmark1} at X:{x1}  Y:{y1}. New position at X:{mid_x} Y:{mid_y}.")
+        #print(f"Moving between: {landmark1} at X:{x1}  Y:{y1} and Landmark: {landmark2} at X:{x2}  Y:{y2}. New position {mid_x}, {mid_y}.")
         return mid_x, mid_y, angle
 
 def move(distance, rob_pos, direction=None):
@@ -142,29 +158,29 @@ def move_to_closest(landmark, rob_pos):
 
     return x, y, angle
 
-def move_to_furthest(landmark, current_pose, rob_pos):
+def move_to_furthest(landmark, rob_pos):
     max_distance = 0
     furthest_landmark = None
-    
+
     for key, coords in landmark_dict.items():
         if key.startswith(landmark):
-            x2, y2, z2 = coords[0], coords[1], coords[2]
-            x1, y1, z1 = current_pose['x'], current_pose['y'], current_pose['z']
-            distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
+            x2, y2 = coords[0], coords[1]
+            x1, y1 = rob_pos[0], rob_pos[1]
+            distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
             if distance > max_distance:
                 max_distance = distance
                 furthest_landmark = key
-    
+
     if furthest_landmark is None:
         print(f"No {landmark}s found.")
         return False
-    
+
     x, y = landmark_dict[furthest_landmark][0], landmark_dict[furthest_landmark][1]
     angle = get_angle([x, y], rob_pos)
     quaternion = euler_to_quaternion(angle)
 
 
-    print(f"Moving to furthest {landmark} at coordinates ({x}, {y})")
+    print(f"The furthest {landmark} is {furthest_landmark} at coordinates ({x}, {y}).")
     return x, y, angle
 
 def rotate(angle, direction, rob_pos):
@@ -195,38 +211,39 @@ def get_function_name(string):
         return None
 
 def call_function(function_name, argument):
-    if function_name == 'robot.move_to':
-        return move_to(argument, [0, 0])
+    if function_name == 'robot.get_robot_pose':
+        return get_robot_pose()
+    elif function_name == 'robot.move_to':
+        return move_to(argument, get_robot_pose()[0:-1])
     elif function_name == 'robot.inspect':
-        return inspect(argument)
+        return inspect(argument, get_robot_pose()[0:-1])
     elif function_name == 'robot.deliver':
         landmarks = argument.split(',')
-        return deliver(landmarks[0].replace("'", ""), landmarks[1].replace("'", "").strip())
+        return deliver(landmarks[0].replace("'", ""), landmarks[1].replace("'", "").strip(), get_robot_pose()[0:-1])
     elif function_name == 'robot.move_between':
-        return move_between(argument)
+        landmarks = argument.split(',')
+        return move_between(landmarks[0].replace("'", ""), landmarks[1].replace("'", "").strip(), get_robot_pose()[0:-1])
     elif function_name == 'robot.move':
         args = argument.split(',')
         distance = float(args[0])
         direction = args[1].strip() if len(args) > 1 else None
-        return move(distance, direction)
+        return move(distance, get_robot_pose()[0:-1], direction=direction)
     elif function_name == 'robot.move_to_closest':
         args = argument.split(',')
+        print('args:', args)
         landmark = args[0].strip()
-        current_pose = args[1].strip()  
-        landmark_dict = args[2].strip()  
-        return move_to_closest(landmark, current_pose, landmark_dict)
+        print('landmark:', landmark)
+        return move_to_closest(landmark, get_robot_pose()[0:-1])
     elif function_name == 'robot.move_to_furthest':
         args = argument.split(',')
         landmark = args[0].strip()
-        current_pose = args[1].strip()
-        landmark_dict = args[2].strip() 
-        return move_to_furthest(landmark, current_pose, landmark_dict)
+        return move_to_furthest(landmark, get_robot_pose()[0:-1])
     elif function_name == 'robot.rotate':
         args = argument.split(',')
         angle = float(args[0])
         direction = args[1].strip() if len(args) > 1 else "left" 
         rob_pos = args[2].strip()
-        return rotate(angle, direction, rob_pos)
+        return rotate(angle, direction, get_robot_pose()[0:-1])
     else:
         f"Function {function_name} not found."
         return False
@@ -287,10 +304,10 @@ def landmark_pc(landmark_positions):
 
 def extract_function_calls(text):
     # Define the keyword to look for
-    keyword = "I am calling the function(s): "
+    keyword = "robot."
     
     # Find the starting index of the keyword
-    start_index = text.find(keyword)
+    start_index = text.find(keyword) - 6
     
     # If the keyword is found, extract the rest of the text
     if start_index != -1:

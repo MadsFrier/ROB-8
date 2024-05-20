@@ -82,18 +82,21 @@ def update_robot(vis, pcd, mesh_cylinder, mesh_arrow, x, y, yaw):
 # file_path = 'C:/Users/Christian/Documents/GitHub/ROB-8/gpt/ChatGPT/landmarks.json'
 # with open(file_path, 'r') as file:
 #     landmark_dict = json.load(file)
-    
+
 # pos_list = []
 
 # for lm in landmark_dict:
 #     pos = landmark_dict.get(lm)
 #     pos_list.append(pos[:2])
     
-# #-------------------------#
+#-------------------------#
 
-# vis, pcd, mesh_cylinder, mesh_arrow = vis_init(pcd_path='C:/Users/Christian/Documents/GitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd')
+vis, pcd, mesh_cylinder, mesh_arrow = vis_init(pcd_path='C:/Users/madsf/Documents/gitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd')
 
-# while True:
-#     for i in pos_list:
-#         update_robot(vis, pcd, mesh_cylinder, mesh_arrow,  i[0], i[1], 0)
-#         time.sleep(1)
+while True:
+    with open('C:/Users/madsf/Documents/gitHub/ROB-8/gpt/ChatGPT/robot_pose.json', 'r') as file:
+        robot_pose = json.load(file)
+        x, y, yaw = robot_pose["robot_pose"]
+    
+    update_robot(vis, pcd, mesh_cylinder, mesh_arrow,  x, y, yaw)
+       

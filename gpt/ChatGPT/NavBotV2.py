@@ -15,7 +15,7 @@ import landmark_position as lp
 #from Landmark import landmark_position as lp
 import display_pose as dp
 time.sleep(1)
-vis, pcd, mesh_cylinder, mesh_arrow = dp.vis_init(pcd_path="C:/Users/Christian/Documents/GitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd")
+vis, pcd, mesh_cylinder, mesh_arrow = dp.vis_init(pcd_path="C:/Users/madsf/Documents/gitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd")
 time.sleep(5)
 client = OpenAI()
 test = True
