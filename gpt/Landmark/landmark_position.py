@@ -6,7 +6,7 @@ import numpy as np
 import math
 from scipy.spatial.transform import Rotation as R
 
-file_path = 'ChatGPT/landmarks.json'
+file_path = 'gpt/ChatGPT/landmarks.json'
 with open(file_path, 'r') as file:
     landmark_dict = json.load(file)
 
@@ -196,7 +196,7 @@ def get_function_name(string):
 
 def call_function(function_name, argument):
     if function_name == 'robot.move_to':
-        return move_to(argument)
+        return move_to(argument, [0, 0])
     elif function_name == 'robot.inspect':
         return inspect(argument)
     elif function_name == 'robot.deliver':
@@ -299,48 +299,48 @@ def extract_function_calls(text):
     else:
         # Return None if the keyword is not found
         return None
+def main():
+    client = OpenAI()
+    user_prompt =input("Enter your prompt: ")
+    robot_commands = None
 
-client = OpenAI()
-user_prompt =input("Enter your prompt: ")
-robot_commands = None
+    if user_prompt != '0':
+        robot_commands =  call_ChatGPT(user_prompt)
+        robot_commands = extract_function_calls(robot_commands)
+    else:
+        robot_commands =  call_ChatGPT("move to chair_0")
+        robot_commands = extract_function_calls(robot_commands)
 
-if user_prompt != '0':
-    robot_commands =  call_ChatGPT(user_prompt)
-    robot_commands = extract_function_calls(robot_commands)
-else:
-    robot_commands =  call_ChatGPT("move to chair_0")
-    robot_commands = extract_function_calls(robot_commands)
+    robot_commands =robot_commands.splitlines()
+    new_prompt = False
+    while True:
+    
+        for command in robot_commands:
+            print(f'Command: {command}')
+            function_name, argument= get_function_name(command)
+            landmark_positions = call_function(function_name, argument)
+        
+            if landmark_positions == False:
+                user_prompt = input('Please enter a valid command: ')
+                robot_commands = call_ChatGPT(user_prompt)
+                robot_commands = extract_function_calls(robot_commands).splitlines()
+                print(f'Prompt: {robot_commands}')
+                new_prompt = True
+                continue
+            
+            else: 
+                new_prompt = False
+                landmark_pc(landmark_positions)
 
-robot_commands =robot_commands.splitlines()
-new_prompt = False
-while True:
-   
-    for command in robot_commands:
-        print(f'Command: {command}')
-        function_name, argument= get_function_name(command)
-        landmark_positions = call_function(function_name, argument)
-       
-        if landmark_positions == False:
-            user_prompt = input('Please enter a valid command: ')
-            robot_commands = call_ChatGPT(user_prompt)
-            robot_commands = extract_function_calls(robot_commands).splitlines()
-            print(f'Prompt: {robot_commands}')
-            new_prompt = True
+        if new_prompt == True:
             continue
         
-        else: 
-            new_prompt = False
-            landmark_pc(landmark_positions)
-
-    if new_prompt == True:
-        continue
-    
-    else:
-        exit_input = input('Would you like to exit? (y/n)')
-        if exit_input == 'y':
-            print('Exiting...')
-            exit()
         else:
-            robot_commands = call_ChatGPT(input('Enter a new command: '))
-            robot_commands = extract_function_calls(robot_commands).splitlines()
-        
+            exit_input = input('Would you like to exit? (y/n)')
+            if exit_input == 'y':
+                print('Exiting...')
+                exit()
+            else:
+                robot_commands = call_ChatGPT(input('Enter a new command: '))
+                robot_commands = extract_function_calls(robot_commands).splitlines()
+            

@@ -1,11 +1,27 @@
+import sys
 import os
 import time
 from openai import OpenAI
+script_dir = os.path.dirname(__file__)
+print(script_dir)
+vis_path = '../vis'
+lp_path = '../Landmark'
+target_vis= os.path.join(script_dir, vis_path)
+print(target_vis)
+target_lp = os.path.join(script_dir, lp_path)
+sys.path.append(target_vis)
+sys.path.append(target_lp)
+import landmark_position as lp
+#from Landmark import landmark_position as lp
+import display_pose as dp
+time.sleep(1)
+vis, pcd, mesh_cylinder, mesh_arrow = dp.vis_init(pcd_path="C:/Users/Christian/Documents/GitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd")
+time.sleep(5)
 client = OpenAI()
 test = True
 
 my_file = client.files.create(
-  file=open("database.txt", "rb"),
+  file=open("gpt\database.txt", "rb"),
   purpose='assistants'
 )
 my_assistant = client.beta.assistants.create(
@@ -64,11 +80,20 @@ while True:
             assitant_answer = all_messages.data[0].content[0].text.value
             # Display assistant message
             print(f"\nAssistant: {all_messages.data[0].content[0].text.value}\n")
-            if test == True:
-                f = open("Single_Object_Test_Assistant.txt", "a")
-                f.write('\nUser Prompt: '+user_input+' ')
-                f.write('Assistant Response: ' + assitant_answer)
-                f.close()
+            robot_command = lp.extract_function_calls(assitant_answer)
+            print(f'Robot Command: {robot_command}')
+            function_name, argument = lp.get_function_name(robot_command)
+            print(f'Function Name: {function_name}, Argument: {argument}')
+            landmark_positions = lp.call_function(function_name, argument)
+            if landmark_positions == False:
+                exit()
+                
+            print(f'GPT Response: {robot_command}')
+      
+            time.sleep(5)
+            # Update the robot pose in the visualizer
+            dp.update_robot(vis, pcd, mesh_cylinder, mesh_arrow, landmark_positions[0], landmark_positions[1], landmark_positions[2])
+
 
             break
         elif keep_retrieving_run.status in ["queued", "in_progress"]:
