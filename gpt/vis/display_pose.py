@@ -21,45 +21,17 @@ def vis_init(full_scrn=False, pcd_path="/Users/madsf/Documents/github/ROB-8/gpt/
 
     mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame().translate((1, -3.5, 0))
     vis.add_geometry(mesh_frame)
+    
+    T_origin_cylinder = transform_robot_euler(mesh_arrow, 0, 0, 0, 0, 0)
+    T_origin_arrow = transform_robot_euler(mesh_arrow, 0, 0, 0, np.pi/2, 0)
+
+    mesh_cylinder.transform(T_origin_cylinder)
+    mesh_arrow.transform(T_origin_arrow)    
 
     if full_scrn:
         vis.toggle_full_screen()
         
-    return vis, pcd, mesh_cylinder, mesh_arrow
-
-def transform_robot_euler(mesh_arrow, x, y, e1, e2, e3):
-    T = np.eye(4)
-    T[:3, :3] = mesh_arrow.get_rotation_matrix_from_xyz((e1, e2, e3))
-    T[0, 3] = x
-    T[1, 3] = y
-    T[2, 3] = 0.01
-
-    return T
-
-def transform_robot_quat(mesh_arrow, x, y, q1, q2, q3, q4):
-    T = np.eye(4)
-    T[:3, :3] = mesh_arrow.get_rotation_matrix_from_quaternion((q1, q2, q3, q4))
-    T[0, 3] = x
-    T[1, 3] = y
-    T[2, 3] = 0.01
-
-    return T
-
-file_path = '/Users/madsf/Documents/github/ROB-8/gpt/ChatGPT/landmarks.json'
-with open(file_path, 'r') as file:
-    landmark_dict = json.load(file)
-    
-pos_list = []
-
-for lm in landmark_dict:
-    pos = landmark_dict.get(lm)
-    pos_list.append(pos[:2])
-    
-vis, pcd, mesh_cylinder, mesh_arrow = vis_init()
-
-#-------------------------#
-
-vis.set_view_status('''{
+    vis.set_view_status('''{
         "class_name" : "ViewTrajectory",
         "interval" : 29,
         "is_loop" : true,
@@ -77,42 +49,51 @@ vis.set_view_status('''{
         ],
         "version_major" : 1,
         "version_minor" : 0
-    }''')
+    }''') 
+        
+    return vis, pcd, mesh_cylinder, mesh_arrow
 
-def update_robot(vis, mesh_cylinder, mesh_arrow, T):     
+def transform_robot_euler(mesh_arrow, x, y, e1, e2, e3):
+    T = np.eye(4)
+    T[:3, :3] = mesh_arrow.get_rotation_matrix_from_xyz((e1, e2, e3))
+    T[0, 3] = x
+    T[1, 3] = y
+    T[2, 3] = 0.01
+
+    return T
+
+def update_robot(vis, mesh_cylinder, mesh_arrow, x, y, yaw):     
+    T = transform_robot_euler(mesh_arrow, x, y, 0, 0, yaw)
+    vis.update_geometry(pcd)
+    
     mesh_cylinder.transform(T)
     mesh_arrow.transform(T)
     
     vis.update_geometry(mesh_cylinder)
     vis.update_geometry(mesh_arrow)
     
+    vis.poll_events()
+    vis.update_renderer()
+    
     T_inv = np.linalg.inv(T)
-    mesh_cylinder.transform(T_inv) 
-    mesh_arrow.transform(T_inv)   
+    mesh_cylinder.transform(T_inv)
+    mesh_arrow.transform(T_inv)  
 
-T_origin_cylinder = transform_robot_euler(mesh_arrow, 0, 0, 0, 0, 0)
-T_origin_arrow = transform_robot_euler(mesh_arrow, 0, 0, 0, np.pi/2, 0)
-#T = transform_robot_euler(mesh_arrow, -1.304765224456787, 5.837662220001221, 0, 0, 1.7906903750384981)
-#T = transform_robot_quat(mesh_arrow, -0.27053403854370117, 1.6023006737232208, 0. , 0.  , 0.76370304, 0.64556771)
+file_path = '/Users/madsf/Documents/github/ROB-8/gpt/ChatGPT/landmarks.json'
+with open(file_path, 'r') as file:
+    landmark_dict = json.load(file)
+    
+pos_list = []
 
-mesh_cylinder.transform(T_origin_cylinder)
-mesh_arrow.transform(T_origin_arrow)    
+for lm in landmark_dict:
+    pos = landmark_dict.get(lm)
+    pos_list.append(pos[:2])
+    
+#-------------------------#
+
+vis, pcd, mesh_cylinder, mesh_arrow = vis_init()
 
 while True:
     for i in pos_list:
-        T = transform_robot_euler(mesh_arrow, i[0], i[1], 0, 0, 0)
-        vis.update_geometry(pcd)
-        
-        mesh_cylinder.transform(T)
-        mesh_arrow.transform(T)
-        
-        vis.update_geometry(mesh_cylinder)
-        vis.update_geometry(mesh_arrow)
-        
-        vis.poll_events()
-        vis.update_renderer()
-        
-        T_inv = np.linalg.inv(T)
-        mesh_cylinder.transform(T_inv)
-        mesh_arrow.transform(T_inv)
+        update_robot(vis, mesh_cylinder, mesh_arrow, i[0], i[1], 0)
         time.sleep(1)
