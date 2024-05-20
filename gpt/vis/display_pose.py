@@ -62,7 +62,7 @@ def transform_robot_euler(mesh_arrow, x, y, e1, e2, e3):
 
     return T
 
-def update_robot(vis, mesh_cylinder, mesh_arrow, x, y, yaw):     
+def update_robot(vis, pcd, mesh_cylinder, mesh_arrow, x, y, yaw):     
     T = transform_robot_euler(mesh_arrow, x, y, 0, 0, yaw)
     vis.update_geometry(pcd)
     
@@ -79,21 +79,21 @@ def update_robot(vis, mesh_cylinder, mesh_arrow, x, y, yaw):
     mesh_cylinder.transform(T_inv)
     mesh_arrow.transform(T_inv)  
 
-file_path = '/Users/madsf/Documents/github/ROB-8/gpt/ChatGPT/landmarks.json'
-with open(file_path, 'r') as file:
-    landmark_dict = json.load(file)
+#file_path = '/Users/madsf/Documents/github/ROB-8/gpt/ChatGPT/landmarks.json'
+#with open(file_path, 'r') as file:
+#    landmark_dict = json.load(file)
     
-pos_list = []
+#pos_list = []
 
-for lm in landmark_dict:
-    pos = landmark_dict.get(lm)
-    pos_list.append(pos[:2])
+#for lm in landmark_dict:
+#    pos = landmark_dict.get(lm)
+#    pos_list.append(pos[:2])
     
 #-------------------------#
 
-vis, pcd, mesh_cylinder, mesh_arrow = vis_init()
+#vis, pcd, mesh_cylinder, mesh_arrow = vis_init()
 
-while True:
-    for i in pos_list:
-        update_robot(vis, mesh_cylinder, mesh_arrow, i[0], i[1], 0)
-        time.sleep(1)
+#while True:
+#    for i in pos_list:
+#        update_robot(vis, mesh_cylinder, mesh_arrow, i[0], i[1], 0)
+#        time.sleep(1)
