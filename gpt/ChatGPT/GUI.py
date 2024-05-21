@@ -152,23 +152,23 @@ class NavBotV2GUI:
                 self.display_message("Assistant: ", "bold")
                 time.sleep(0.5)
                 self.display_message(f"{assistant_message}\n", "normal")
-                print(assistant_message)
+             
                 robot_commands = lp.extract_all_functions(assistant_message)
-                print(f'Robot Commands: {robot_commands}')
+                
                 for i in robot_commands:
                     
                     print('robot_commands: ' +i)
                 for command in robot_commands:
                     command = lp.extract_function_calls(command)
-                    print(f'Robot Command: {command}')
+                   
                     function_name, argument = lp.get_function_name(command)
-                    print(f'Function Name: {function_name}, Argument: {argument}')
+                    
                     landmark_positions = lp.call_function(function_name, argument)
                     if landmark_positions == False:
                         break 
         
                     lp.update_robot_pose(landmark_positions[0], landmark_positions[1], landmark_positions[2])
-                    print('robot pose:', lp.get_robot_pose())
+                    
                     time.sleep(5)
 
 
