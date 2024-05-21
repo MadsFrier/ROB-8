@@ -147,6 +147,11 @@ class NavBotV2GUI:
 
                 # Display assistant message
                 assistant_message = all_messages.data[0].content[0].text.value
+                self.loading = False 
+                time.sleep(0.5)
+                self.display_message("Assistant: ", "bold")
+                time.sleep(0.5)
+                self.display_message(f"{assistant_message}\n", "normal")
                 print(assistant_message)
                 robot_command = lp.extract_function_calls(assistant_message)
                 print(f'Robot Command: {robot_command}')
@@ -158,11 +163,6 @@ class NavBotV2GUI:
                     
                 # print(f'GPT Response: {robot_command}')
                 #print(assistant_message)
-                self.loading = False 
-                time.sleep(0.5)
-                self.display_message("Assistant: ", "bold")
-                time.sleep(0.5)
-                self.display_message(f"{assistant_message}\n", "normal")
                 
                 # Update the robot pose in the visualizer
                 #dp.update_robot(vis, pcd, mesh_cylinder, mesh_arrow, landmark_positions[0], landmark_positions[1], landmark_positions[2])
