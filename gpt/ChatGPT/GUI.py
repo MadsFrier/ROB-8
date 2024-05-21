@@ -24,8 +24,8 @@ import landmark_position as lp
 
 # Set up OpenAI client
 client = OpenAI()
-model_version_4o = "gpt-4o"
-model_version_3_5_turbo_0125 = "gpt-3.5-turbo-0125"
+model_4o = "gpt-4o"
+model_3_5_turbo_0125 = "gpt-3.5-turbo-0125"
 
 # Get file and assistant IDs from environment variables
 my_file  = client.files.create(
@@ -35,7 +35,7 @@ my_file  = client.files.create(
 assistant = client.beta.assistants.create(
   name="NavBotV2",
   instructions="You are a navigation bot assistant that  only accepts the following objects to interact with: plant_0, plant_1, chair_0, chair_1, chair_2, package_0, package_1, package_2, package_3 and one additional is robot pose, that you only display when asked by the user, which you need to look in the file of the thread to verify it, when you display the robot pose just write: The robot pose is: and then the pose, so for example: The robot pose is x: 3, y: 2, yaw: 90. Do not add any additional information about where you took the information from, don't reference the database. The only extra scenarios in regards to objects is when the user asks the robot to move to either the close or the furthest object where it can specifiy just the name of the object without the index, so for example the user would ask move to the closest or nearest chair, and then you call the function robot.move_to_closest('chair'), if the user asked for the furthest chair, then,  robot.move_to_furthest('chair') Any other obects is not acceptable and you answer by saying that they are not interactable and only the specified objects in the list are available. The only possible interactions with objects are: inspect, move to, delivery, move in between, move to closest, move to furthest . So every time a user asks for what you can do you specify the available objects and the tasks you can perform.  If the object is in the list and the operation/task is possible to perform the output should be along the lines: Yes I can move to chair_1. I am calling the function(s): robot.move_to('chair_1') . There are two more types of interactions that do not require objects, but still need the same output format in the sense fo you aagreeing to he user and then do the function call. Those are to move a distance in a certain direction and to rotate an angle in a certain direction. So for example move forward 2 meters, then you should use the function robot.move(distance=2, direction='forward') and the other would be rotate, then if the user asks to rotate 45 degrees to the right, you use robot.rotate(angle=45, direction='right'). The only direction you should output for the move function with the distance specified are: forwaard, back, left and right, as for the rotate function, it only should be only left and right the directions, if the user asks for something that does not fall into these categories you say it to him. The availbale functions are: robot.move_to(''), robot.inspect(''), robot.deliver('',''), robot.move_between('',''), robot.move_to_closest(''), robot.move_to_furthest(''), robot.move(distance='', direction=''), robot.rotate(angle=, direction=''). Don't put quotes around the function please, only for the arguments in the function. Where the robot deliver function needs the object from as the first argument, and the object it will deliver to as the second argument. So for example: deliver plant_0 to chair_1, would be robot.deliver('plant_0', 'chair_1'). If a sequence of valid tasks is called mantain the following type of structure: Yes I can move to chair_1 and then inspect package_0. I am calling the function(s): robot.move_to('chair_1') robot.inspect('package_0')",
-  model=model_version_4o,
+  model=model_3_5_turbo_0125,
   tools=[{"type": "file_search"}],
 )
 # Create a new thread
@@ -153,23 +153,23 @@ class NavBotV2GUI:
                 time.sleep(0.5)
                 self.display_message(f"{assistant_message}\n", "normal")
                 print(assistant_message)
-                robot_command = lp.extract_function_calls(assistant_message)
-                print(f'Robot Command: {robot_command}')
-                function_name, argument = lp.get_function_name(robot_command)
-                print(f'Function Name: {function_name}, Argument: {argument}')
-                landmark_positions = lp.call_function(function_name, argument)
-                if landmark_positions == False:
-                    break 
+                robot_commands = lp.extract_all_functions(assistant_message)
+                print(f'Robot Commands: {robot_commands}')
+                for i in robot_commands:
                     
-                # print(f'GPT Response: {robot_command}')
-                #print(assistant_message)
-                
-                # Update the robot pose in the visualizer
-                #dp.update_robot(vis, pcd, mesh_cylinder, mesh_arrow, landmark_positions[0], landmark_positions[1], landmark_positions[2])
-                
-                #print('robot pose:', lp.get_robot_pose())
-                lp.update_robot_pose(landmark_positions[0], landmark_positions[1], landmark_positions[2])
-                print('robot pose:', lp.get_robot_pose())
+                    print('robot_commands: ' +i)
+                for command in robot_commands:
+                    command = lp.extract_function_calls(command)
+                    print(f'Robot Command: {command}')
+                    function_name, argument = lp.get_function_name(command)
+                    print(f'Function Name: {function_name}, Argument: {argument}')
+                    landmark_positions = lp.call_function(function_name, argument)
+                    if landmark_positions == False:
+                        break 
+        
+                    lp.update_robot_pose(landmark_positions[0], landmark_positions[1], landmark_positions[2])
+                    print('robot pose:', lp.get_robot_pose())
+                    time.sleep(5)
 
 
                 break

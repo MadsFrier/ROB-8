@@ -3,6 +3,11 @@ import numpy as np
 import json
 import time
 
+chris_p ='C:/Users/Christian/Documents/GitHub/'
+madfs_p ='C:/Users/madsf/Documents/gitHub/'
+path_used = chris_p
+
+
 def vis_init(full_scrn=False, pcd_path="/Users/madsf/Documents/github/ROB-8/gpt/Landmark/rgb_2d_map.pcd"):
     pcd = o3d.io.read_point_cloud(pcd_path)
     vis = o3d.visualization.Visualizer()
@@ -91,10 +96,10 @@ def update_robot(vis, pcd, mesh_cylinder, mesh_arrow, x, y, yaw):
     
 #-------------------------#
 
-vis, pcd, mesh_cylinder, mesh_arrow = vis_init(pcd_path='C:/Users/madsf/Documents/gitHub/ROB-8/gpt/Landmark/rgb_2d_map.pcd')
+vis, pcd, mesh_cylinder, mesh_arrow = vis_init(pcd_path=path_used+'ROB-8/gpt/Landmark/rgb_2d_map.pcd')
 
 while True:
-    with open('C:/Users/madsf/Documents/gitHub/ROB-8/gpt/ChatGPT/robot_pose.json', 'r') as file:
+    with open(path_used+'ROB-8/gpt/ChatGPT/robot_pose.json', 'r') as file:
         robot_pose = json.load(file)
         x, y, yaw = robot_pose["robot_pose"]
     

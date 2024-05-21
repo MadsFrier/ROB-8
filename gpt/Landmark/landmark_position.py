@@ -127,7 +127,11 @@ def move(distance, rob_pos, direction=None):
         yaw -= math.pi / 2
     elif direction == "behind":
         yaw += math.pi
-    
+    elif direction == "forward":
+        pass
+    else:
+        print('Invalid direction. Please specify "left", "right", "foward" "behind".')
+        return None
     new_x = x + distance * math.cos(yaw)
     new_y = y + distance * math.sin(yaw)
     
@@ -184,29 +188,41 @@ def move_to_furthest(landmark, rob_pos):
     return x, y, angle
 
 def rotate(angle, direction, rob_pos):
-    angle_radians = np.radians(angle)
+    
 
     if direction == "left":
-        angle_radians *= -1
-    elif direction == "right":
         pass
+    elif direction == "right":
+        angle *= -1
     else:
         print("Invalid direction. Please specify 'left' or 'right'.")
         return None
         
-    quaternions = euler_to_quaternion(angle_radians)
+    
 
-    print(f"rotating {angle} degrees to the left.")
+    print(f"rotating {angle} degrees to the {direction}.")
     return rob_pos[0], rob_pos[1], angle
 
 ##################################################
 
 def get_function_name(string):
     match = re.match(r"(.+)\('(.+)'\)", string)
+    call_match = re.match(r"(\w+\.\w+)\((.*)\)", string)
     if match:
         function_name = match.group(1)
         argument = match.group(2)
         return function_name, argument
+
+    elif call_match:
+        function_call = call_match.group(1)
+        arguments_string = call_match.group(2)
+
+        # Split arguments by ',' not within parentheses or quotes
+        arguments = re.findall(r"\w+\s*=\s*[^,]+", arguments_string)
+        arguments = [arg.strip() for arg in arguments]  # Remove any surrounding whitespace
+        print(f'Function Call: {function_call}, Arguments: {arguments}')
+        return  function_call, arguments
+
     else:
         return None
 
@@ -224,9 +240,12 @@ def call_function(function_name, argument):
         landmarks = argument.split(',')
         return move_between(landmarks[0].replace("'", ""), landmarks[1].replace("'", "").strip(), get_robot_pose()[0:-1])
     elif function_name == 'robot.move':
-        args = argument.split(',')
-        distance = float(args[0])
-        direction = args[1].strip() if len(args) > 1 else None
+        distance  = re.search(r"distance\s*=\s*(\d+)", argument[0])
+        distance = float(distance.group(1))
+        print('distance:', distance)
+        direction = re.search(r"direction\s*=\s*'([^']*)'", argument[1])
+        direction = direction.group(1)
+        print('direction:', direction)
         return move(distance, get_robot_pose()[0:-1], direction=direction)
     elif function_name == 'robot.move_to_closest':
         args = argument.split(',')
@@ -239,10 +258,12 @@ def call_function(function_name, argument):
         landmark = args[0].strip()
         return move_to_furthest(landmark, get_robot_pose()[0:-1])
     elif function_name == 'robot.rotate':
-        args = argument.split(',')
-        angle = float(args[0])
-        direction = args[1].strip() if len(args) > 1 else "left" 
-        rob_pos = args[2].strip()
+        angle  = re.search(r"angle\s*=\s*(\d+)", argument[0])
+        angle = float(angle.group(1))
+        print('angle:', angle)
+        direction = re.search(r"direction\s*=\s*'([^']*)'", argument[1])
+        direction = direction.group(1)
+        print('direction:', direction)
         return rotate(angle, direction, get_robot_pose()[0:-1])
     else:
         f"Function {function_name} not found."
@@ -301,6 +322,14 @@ def landmark_pc(landmark_positions):
         new_y = y
     
     return new_x, new_y, z, qx, qy, qz, qw
+
+def extract_all_functions(script):
+    # This regex will match function calls and capture the function name and arguments
+    matches = re.findall(r"(\w+\.\w+)\s*\((.*?)\)", script)
+    
+    # Create a list of strings in the format "function_name(arguments)"
+    function_calls = [f"{func}({args})" for func, args in matches]
+    return function_calls
 
 def extract_function_calls(text):
     # Define the keyword to look for
