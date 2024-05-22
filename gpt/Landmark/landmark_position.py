@@ -32,10 +32,12 @@ def update_robot_pose(x, y, yaw):
     with open('gpt/ChatGPT/robot_pose.json', 'r') as file:
         robot_pose = json.load(file)
         robot_pose["robot_pose"] = [x, y, yaw]
+
     
     with open('gpt/ChatGPT/robot_pose.json', 'w') as file:
         json.dump(robot_pose, file, indent=4)
 
+        print(f"Robot position updated to X:{x}  Y:{y}  Yaw:{yaw}")
 def move_to(landmark, rob_pos):
 
     if landmark_dict.get(landmark) is not None:
@@ -121,11 +123,12 @@ def move(distance, rob_pos, direction=None):
     x, y = rob_pos
     yaw = 0  
     
+    
     if direction == "left":
         yaw += math.pi / 2 
     elif direction == "right":
         yaw -= math.pi / 2
-    elif direction == "behind" | direction == "back" | direction == "backward":
+    elif direction == "behind" or direction == "back" or direction == "backward":
         yaw += math.pi
     elif direction == "forward":
         pass
