@@ -125,7 +125,7 @@ def move(distance, rob_pos, direction=None):
         yaw += math.pi / 2 
     elif direction == "right":
         yaw -= math.pi / 2
-    elif direction == "behind":
+    elif direction == "behind" | direction == "back" | direction == "backward":
         yaw += math.pi
     elif direction == "forward":
         pass
