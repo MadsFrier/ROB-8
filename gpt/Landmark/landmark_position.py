@@ -87,7 +87,6 @@ def deliver(landmark1, landmark2, rob_pos):
         quaternions1 = euler_to_quaternion(angle1)
         quaternions2 = euler_to_quaternion(angle2)
 
-        
         print(f"Delivering to Landmark: {landmark2} at X:{x2}  Y:{y2} from Landmark: {landmark1} at X:{x1}  Y:{y1}")
         return x1, y1, angle1, x2, y2, angle2
     
@@ -123,7 +122,7 @@ def move(distance, rob_pos, direction=None):
     x, y = rob_pos
     yaw = 0  
     
-    
+
     if direction == "left":
         yaw += math.pi / 2 
     elif direction == "right":

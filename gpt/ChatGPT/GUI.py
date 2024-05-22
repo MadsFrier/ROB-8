@@ -181,6 +181,9 @@ class NavBotV2GUI:
                     lp.update_robot_pose(landmark_positions[0], landmark_positions[1], landmark_positions[2])
                     print(f'Robot Pose:   {lp.get_robot_pose()}')
                     time.sleep(5)
+                    if landmark_positions[3]:
+                        lp.update_robot_pose(landmark_positions[3], landmark_positions[4], landmark_positions[5])
+                        time.sleep(5)
 
 
                 break
